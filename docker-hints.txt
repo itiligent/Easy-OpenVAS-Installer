@@ -1,0 +1,54 @@
+#####################################################################
+# 
+# DOCKER CONTAINER HINTS AND USEFUL JUNK
+#
+#####################################################################
+
+# Watch docker logs
+# docker-compose -f $DOWNLOAD_DIR/docker-compose-$RELEASE.yml -p greenbone-community-edition logs -f
+
+# Update and start containers
+# docker-compose -f $DOWNLOAD_DIR/docker-compose.yml -p greenbone-community-edition pull
+# docker-compose -f $DOWNLOAD_DIR/docker-compose.yml -p greenbone-community-edition up -d
+
+# To start from scratch
+# docker-compose -f $DOWNLOAD_DIR/docker-compose.yml -p greenbone-community-edition down -v
+
+# Gain teminal for a container
+# docker exec -it greenbone-community-edition_gvmd_1 /bin/bash 
+
+# Run a command in a container 
+# docker exec -it <container name> <command> 
+
+# Uddate VTs
+# docker-compose -f $DOWNLOAD_DIR/docker-compose.yml -p greenbone-community-edition restart ospd-openvas
+
+# Force reload of all reports/scan configs and port lists
+# docker-compose -f $DOWNLOAD_DIR/docker-compose.yml -p greenbone-community-edition exec -u gvmd gvmd gvmd --rebuild-gvmd-data=all
+
+# Restart gvmd
+# docker-compose -f $DOWNLOAD_DIR/docker-compose.yml -p greenbone-community-edition restart gvmd
+
+# Get the details of existing containers
+# docker ps 
+
+# show container IP and interfaces
+# docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' greenbone-community-edition_gsa_1
+# ifname=ip link | awk -F: '$0 !~ "lo|vir|wl|ve|br|do|^[^0-9]"{print $2;getline}' | awk '{ gsub(/ /,""); print }'
+# ip route show to default | grep -Eo "dev\s*[[:alnum:]]+" | sed 's/dev\s//g'
+
+
+# Add syslog to a container for debug 
+# docker exec -it greenbone-community-edition_gvmd_1 apt-get update
+# docker exec -it greenbone-community-edition_gvmd_1 apt-get install rsyslog -y
+# docker exec -it greenbone-community-edition_gvmd_1 service rsyslog start
+#
+
+# docker exec -it greenbone-community-edition_gvmd_1  /bin/bash 
+# tail -f /var/log/syslog
+
+#iptables -I DOCKER-USER -i eth0 -p tcp -m conntrack --ctorigdstport 8080 -j DROP
+#iptables -I DOCKER-USER -i eth0 -s 10.0.0.0/24 -p tcp -m conntrack --ctorigdstport 8080 -j ACCEPT
+
+#https://serverfault.com/questions/704643/steps-for-limiting-outside-connections-to-docker-container-with-iptables
+# https://serverfault.com/questions/946010/what-are-proper-iptables-rules-for-docker-host
