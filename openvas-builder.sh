@@ -5,7 +5,7 @@
 # David Harrop
 # June 2024
 #########################################################################################################################
-source /etc/os-release
+
 #########################################################################################################################
 # EDIT THIS SECTION ONLY: All custom settings & dependency mgmt between distros is handled in this section ##############
 #########################################################################################################################
@@ -25,6 +25,9 @@ CERT_DAYS="3650"                      # For RSA SSL cert, number of days until s
 KEYSIZE=2048                          # RSA certificate encryption strength
 
 ## POSTGRESQL PACKAGE MANAGEMENT ##
+source /etc/os-release
+VERSION_CODENAME=$VERSION_CODENAME
+
 export OFFICIAL_POSTGRESQL="false"    # True = Force official Posgresql source repo
 if [[ "${OFFICIAL_POSTGRESQL}" == "true" ]]; then
     # Install latest current version from official Postgresql repo
