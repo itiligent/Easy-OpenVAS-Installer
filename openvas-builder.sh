@@ -29,10 +29,11 @@ source /etc/os-release
 VERSION_CODENAME=$VERSION_CODENAME
 
 export OFFICIAL_POSTGRESQL="false"    # True = Force official Posgresql source repo
+# Or override the Postgresql version with a specific distro supplied package.
 if [[ "${OFFICIAL_POSTGRESQL}" == "true" ]]; then
-    # Install latest current version from official Postgresql repo
     export POSTGRESQL="postgresql-15 postgresql-server-dev-15"
-elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && "${VERSION_CODENAME,,}" == *"bullseye"* ]]; then
+ elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && "${VERSION_CODENAME,,}" == *"bullseye"* ]]; then
+    # Distro no longer contains supported Postgresql version packages, forcing official repo
     export OFFICIAL_POSTGRESQL="true"
     export POSTGRESQL="postgresql-15 postgresql-server-dev-15"
 elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && "${VERSION_CODENAME,,}" == *"jammy"* ]]; then
@@ -40,10 +41,11 @@ elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && "${VERSION_CODENAME,,}" == *"jammy
 elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && "${VERSION_CODENAME,,}" == *"bookworm"* ]]; then
     export POSTGRESQL="postgresql postgresql-server-dev-15"
 elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && ( "${VERSION_CODENAME,,}" == *"trixie"* || "${VERSION_CODENAME,,}" == *"noble"* ) ]]; then
+    # Distro no longer contains supported Postgresql version packages, forcing official repo
     export OFFICIAL_POSTGRESQL="true"
     export POSTGRESQL="postgresql-15 postgresql-server-dev-15"
 else
-    # All other distros will use official source
+    # All other distros not listed will use supported Postgresql version from official source
     export OFFICIAL_POSTGRESQL="true"
     export POSTGRESQL="postgresql-15 postgresql-server-dev-15"
 fi
