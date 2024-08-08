@@ -5,10 +5,21 @@
 # David Harrop
 # June 2024
 #########################################################################################################################
-source /etc/os-release
+
 #########################################################################################################################
 # EDIT THIS SECTION ONLY: All custom settings & dependency mgmt between distros is handled in this section ##############
 #########################################################################################################################
+
+## OVERRIDE LATEST RELEASE AUTO DOWNLOAD  eg. 22.9.1 or "" for latest ##
+FORCE_GVM_LIBS_VERSION=""                            # see https://github.com/greenbone/gvm-libs
+FORCE_GVMD_VERSION=""                                # see https://github.com/greenbone/gvmd
+FORCE_PG_GVM_VERSION=""                              # see https://github.com/greenbone/pg-gvm
+FORCE_GSA_VERSION=""                                 # see https://github.com/greenbone/gsa
+FORCE_GSAD_VERSION=""                                # see https://github.com/greenbone/gsad
+FORCE_OPENVAS_SMB_VERSION=""                         # see https://github.com/greenbone/openvas-smb
+FORCE_OPENVAS_SCANNER_VERSION=""                     # see https://github.com/greenbone/openvas-scanner
+FORCE_OSPD_OPENVAS_VERSION=""                        # see https://github.com/greenbone/ospd-openvas
+FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scanner
 
 ## DEPENDENCY MANAGEMENT ## (OpenVAS updates will require dependency changes from time to time, add to the below as needed.)
 # common
@@ -45,6 +56,8 @@ GVMTOOLS_DEPS="sudo apt-get install -y python3 python3-pip python3-venv python3-
 # redis
 REDIS_DEPS="sudo apt-get install -y redis-server"
 
+## POSTGRESQL PACKAGE MANAGEMENT ##
+source /etc/os-release
 # openvasd (Use the same settings as the original install)
 if [[ "${VERSION_CODENAME,,}" == *"bullseye"* ]] || [[ "${VERSION_CODENAME,,}" == *"bookworm"* ]]; then
     OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
@@ -91,17 +104,6 @@ else
     PIP_OPTIONS="--no-warn-script-location"
 	PIP_UNINSTALL="--break-system-packages"
 fi
-
-## OVERRIDE LATEST RELEASE AUTO DOWNLOAD  eg. 22.9.1 or "" for latest ##
-FORCE_GVM_LIBS_VERSION=""                            # see https://github.com/greenbone/gvm-libs
-FORCE_GVMD_VERSION=""                                # see https://github.com/greenbone/gvmd
-FORCE_PG_GVM_VERSION=""                              # see https://github.com/greenbone/pg-gvm
-FORCE_GSA_VERSION=""                                 # see https://github.com/greenbone/gsa
-FORCE_GSAD_VERSION=""                                # see https://github.com/greenbone/gsad
-FORCE_OPENVAS_SMB_VERSION=""                         # see https://github.com/greenbone/openvas-smb
-FORCE_OPENVAS_SCANNER_VERSION=""                     # see https://github.com/greenbone/openvas-scanner
-FORCE_OSPD_OPENVAS_VERSION=""                        # see https://github.com/greenbone/ospd-openvas
-FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scanner
 
 #########################################################################################################################
 # Start of script actions - NO NEED TO EDIT BELOW THIS POINT ############################################################

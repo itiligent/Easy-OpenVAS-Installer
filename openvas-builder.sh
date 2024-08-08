@@ -24,10 +24,19 @@ CERT_OU="SecOps"                      # For RSA SSL cert, Optional to change, mu
 CERT_DAYS="3650"                      # For RSA SSL cert, number of days until self signed certificate expiry
 KEYSIZE=2048                          # RSA certificate encryption strength
 
+## OVERRIDE LATEST RELEASE AUTO SELECTION   eg. 22.9.1 or "" for latest ##
+FORCE_GVM_LIBS_VERSION=""                            # see https://github.com/greenbone/gvm-libs
+FORCE_GVMD_VERSION=""                                # see https://github.com/greenbone/gvmd
+FORCE_PG_GVM_VERSION=""                              # see https://github.com/greenbone/pg-gvm
+FORCE_GSA_VERSION=""                                 # see https://github.com/greenbone/gsa
+FORCE_GSAD_VERSION=""                                # see https://github.com/greenbone/gsad
+FORCE_OPENVAS_SMB_VERSION=""                         # see https://github.com/greenbone/openvas-smb
+FORCE_OPENVAS_SCANNER_VERSION=""                     # see https://github.com/greenbone/openvas-scanner
+FORCE_OSPD_OPENVAS_VERSION=""                        # see https://github.com/greenbone/ospd-openvas
+FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scanner
+
 ## POSTGRESQL PACKAGE MANAGEMENT ##
 source /etc/os-release
-VERSION_CODENAME=$VERSION_CODENAME
-
 export OFFICIAL_POSTGRESQL="false"    # True = Force official Posgresql source repo
 # Or override the Postgresql version with a specific distro supplied package.
 if [[ "${OFFICIAL_POSTGRESQL}" == "true" ]]; then
@@ -131,17 +140,6 @@ else
     PIP_OPTIONS="--no-warn-script-location"
 	PIP_UNINSTALL="--break-system-packages"
 fi
-
-## OVERRIDE LATEST RELEASE AUTO SELECTION   eg. 22.9.1 or "" for latest ##
-FORCE_GVM_LIBS_VERSION=""                            # see https://github.com/greenbone/gvm-libs
-FORCE_GVMD_VERSION=""                                # see https://github.com/greenbone/gvmd
-FORCE_PG_GVM_VERSION=""                              # see https://github.com/greenbone/pg-gvm
-FORCE_GSA_VERSION=""                                 # see https://github.com/greenbone/gsa
-FORCE_GSAD_VERSION=""                                # see https://github.com/greenbone/gsad
-FORCE_OPENVAS_SMB_VERSION=""                         # see https://github.com/greenbone/openvas-smb
-FORCE_OPENVAS_SCANNER_VERSION=""                     # see https://github.com/greenbone/openvas-scanner
-FORCE_OSPD_OPENVAS_VERSION=""                        # see https://github.com/greenbone/ospd-openvas
-FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scanner
 
 #########################################################################################################################
 # Start of script actions - NO NEED TO EDIT BELOW THIS POINT ############################################################
