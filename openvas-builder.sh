@@ -11,8 +11,8 @@
 #########################################################################################################################
 
 ## CUSTOM CONFIG SETTINGS ##
-ADMIN_USER="admin"                    # Set the GVM default admin account username
-ADMIN_PASS="password"                 # Set the GVM default admin account password
+DEFAULT_ADMIN_USER="admin"                    # Set the GVM default admin account username
+DEFAULT_ADMIN_PASS="password"                 # Set the GVM default admin account password
 SERVER_NAME=""                        # Preferred server hostname (installer will prompt if left blank)
 LOCAL_DOMAIN=""                       # Local DNS suffix (defaults to hostname.dns-suffix if left blank)
 CERT_DOMAIN=""                        # TLS certificate dns domain (defaults to hostname.dns-suffix if left blank)
@@ -264,8 +264,8 @@ echo
 
 # Ensure SERVER_NAME is consistent with local host entries
 if [[ -z ${SERVER_NAME} ]]; then
-    echo -e "${LPURPLEB} Update Linux system HOSTNAME [Enter to keep: ${HOSTNAME}]${GREYB}"
-    read -p "              Enter new HOSTNAME : " SERVER_NAME
+    echo -e "${LPURPLEB} Update Linux system HOSTNAME? [Enter to keep: ${HOSTNAME}]${GREYB}"
+    read -p "              Enter Linux hostname : " SERVER_NAME
     # If hit enter making no SERVER_NAME change, assume the existing hostname as current
     if [[ "${SERVER_NAME}" = "" ]]; then
         SERVER_NAME=$HOSTNAME
@@ -291,8 +291,8 @@ fi
 
 # Ensure LOCAL_DOMAIN suffix & localhost entries are consistent
 if [[ -z ${LOCAL_DOMAIN} ]]; then
-    echo -e "${LPURPLEB} Update Linux LOCAL DNS DOMAIN [Enter to keep: ${DOMAIN_SUFFIX}]${GREYB}"
-    read -p "              Enter FULL LOCAL DOMAIN NAME: " LOCAL_DOMAIN
+    echo -e "${LPURPLEB} Update Linux LOCAL DNS SUFFIX [Enter to keep: .${DOMAIN_SUFFIX}]${GREYB}"
+    read -p "              Complete this local domain suffix: $SERVER_NAME." LOCAL_DOMAIN
     # If hit enter making no LOCAL_DOMAIN name change, assume the existing domain suffix as current
     if [[ "${LOCAL_DOMAIN}" = "" ]]; then
         LOCAL_DOMAIN=$DOMAIN_SUFFIX
@@ -336,6 +336,26 @@ DEFAULT_FQDN=$SERVER_NAME.$LOCAL_DOMAIN
 if [ -z "${CERT_DOMAIN}" ]; then
     CERT_DOMAIN="${DEFAULT_FQDN}"
 fi
+
+echo -e "${LPURPLEB} GVM web console admin account name [Enter to use: ${DEFAULT_ADMIN_USER}]${GREYB}"
+# Prompt for managment console admin acount username
+  read -r -p "              Enter admin account name: " admin_user
+  ADMIN_USER=${admin_user:-$DEFAULT_ADMIN_USER}
+
+# Secure prompt for password with confirmation
+  while true; do
+     read -r -s -p "              Enter admin user password: " password
+     echo
+     read -r -s -p "              Confirm admin user password: " password_confirm
+     echo
+      if [ "${password}" == "${password_confirm}" ]; then
+         ADMIN_PASS=${password:-$DEFAULT_ADMIN_PASS}
+         break
+     else
+         echo "              Passwords do not match. Please try again."
+         echo
+     fi
+done
 
 echo
 echo -e "${LGREEN}###############################################################################"
