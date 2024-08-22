@@ -1,7 +1,7 @@
 # Greenbone Vulnerability Scanner Appliance Build Script
 
 ## 📦 Auto Setup Link (latest gvmd v23.x)
-**(Do NOT run installer or upgrade scripts as root, scripts will prompt for sudo)**
+**(Do NOT run scripts as root, scripts will prompt for sudo)**
 ```bash
 wget https://raw.githubusercontent.com/itiligent/OpenVAS-Appliance-Builder/main/openvas-builder.sh && chmod +x openvas-builder.sh && ./openvas-builder.sh
 ```
@@ -32,7 +32,7 @@ wget https://raw.githubusercontent.com/itiligent/OpenVAS-Appliance-Builder/main/
   - Email reports require an O365 email-enabled account & email relay permitted from the scanner IP address
   - A private DNS entry for your appliance (helps avoid browser HTTPS errors - also requires client side certificate import, see below)
 
-## 📖 Customising the build
+## 📖 Customising Your Build
 All script customisation options are managed in the top section of this script under the `CUSTOM CONFIG SETTINGS ` section.  Both the install and upgrade scripts will check GitHub for the latest releases for each module, although specific module versions can also forced in the `OVERRIDE LATEST RELEASE AUTO SELECTION `
 
 ## 📧 Adding Email Reporting to the Community Edition
@@ -47,7 +47,7 @@ A Postfix MTA is installed by default. Simply configure the included template sc
 
 ## 🔒 Web Management Console HTTPS Security
 
-The OpenVAS web console is automatically configured for HTTP redirect to HTTPS on port 443. Instructions for importing browser certificates into Windows and Linux clients (to avoid browser HTTPS warnings) are provided on-screen when the build script completes. If you wish you change the system's DNS name or IP address, or if certificates need to be renewed, simply run [update-certificates.sh](https://github.com/itiligent/OpenVAS-Appliance-Builder/blob/main/update-certificates.sh)
+The install script will automatically configure a HTTP redirect to HTTPS on port 443 and create the required certificates base on the options in the `CUSTOM CONFIG SETTINGS ` section. . Instructions for importing browser certificates into Windows and Linux clients (to avoid browser HTTPS warnings) are provided on-screen when the build script completes. If you wish you change the system's DNS name or IP address, or if certificates need to be renewed, simply run [update-certificates.sh](https://github.com/itiligent/OpenVAS-Appliance-Builder/blob/main/update-certificates.sh)
 
 
 ## 💻 Authenticated Vulnerability Scans Against Windows Hosts
