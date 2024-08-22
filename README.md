@@ -3,12 +3,12 @@
 ### 📦 Auto Setup Link
 **(Do NOT run scripts as root, scripts will prompt for sudo)**
 ```bash
-wget https://raw.githubusercontent.com/itiligent/OpenVAS-Appliance-Builder/main/openvas-install.sh && chmod +x openvas-install.sh && ./openvas-install.sh
+wget https://raw.githubusercontent.com/itiligent/Easy-OpenVAS-Installer/main/openvas-install.sh && chmod +x openvas-install.sh && ./openvas-install.sh
 ```
 
 ### 📦 Auto Upgrade Link
 ```bash
-wget https://raw.githubusercontent.com/itiligent/OpenVAS-Appliance-Builder/main/openvas-upgrade.sh && chmod +x openvas-upgrade.sh  && ./openvas-upgrade.sh 
+wget https://raw.githubusercontent.com/itiligent/Easy-OpenVAS-Installer/main/openvas-upgrade.sh && chmod +x openvas-upgrade.sh  && ./openvas-upgrade.sh 
 ```
 
 ### 📋 Prerequisites
@@ -47,7 +47,7 @@ A Postfix MTA is installed by default. Simply configure the included template sc
 
 ### 🔒 Web Management Console HTTPS Security
 
-The install script will automatically configure a HTTP redirect to HTTPS on port 443 and create the required certificates base on the options in the `CUSTOM CONFIG SETTINGS ` section. . Instructions for importing browser certificates into Windows and Linux clients (to avoid browser HTTPS warnings) are provided on-screen when the build script completes. If you wish you change the system's DNS name or IP address, or if certificates need to be renewed, simply run [update-certificates.sh](https://github.com/itiligent/OpenVAS-Appliance-Builder/blob/main/update-certificates.sh)
+The install script will automatically configure a HTTP redirect to HTTPS on port 443 and create the required certificates base on the options in the `CUSTOM CONFIG SETTINGS ` section. . Instructions for importing browser certificates into Windows and Linux clients (to avoid browser HTTPS warnings) are provided on-screen when the build script completes. If you wish you change the system's DNS name or IP address, or if certificates need to be renewed, simply run [update-certificates.sh](https://github.com/itiligent/Easy-OpenVAS-Installer/blob/main/update-certificates.sh)
 
 
 ### 💻 How To Run Authenticated Scans Against Windows Hosts
