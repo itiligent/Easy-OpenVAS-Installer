@@ -3,7 +3,7 @@
 ### 📦 Auto Setup Link
 **(Do NOT run scripts as root, scripts will prompt for sudo)**
 ```bash
-wget https://raw.githubusercontent.com/itiligent/OpenVAS-Appliance-Builder/main/openvas-builder.sh && chmod +x openvas-builder.sh && ./openvas-builder.sh
+wget https://raw.githubusercontent.com/itiligent/OpenVAS-Appliance-Builder/main/openvas-install.sh && chmod +x openvas-install.sh && ./openvas-install.sh
 ```
 
 ### 📦 Auto Upgrade Link
