@@ -32,49 +32,8 @@ wget https://raw.githubusercontent.com/itiligent/OpenVAS-Appliance-Builder/main/
   - Email reports require an O365 email-enabled account & email relay permitted from the scanner IP address
   - A private DNS entry for your appliance (helps avoid browser HTTPS errors - also requires client side certificate import, see below)
 
-## 📖 Instructions
-All configuration options are managed in the top section of this script (shown below).  Both the install and upgrade scripts will check GitHub for the latest releases for each module, although specific versions can also be locked.
-```
-## CUSTOM CONFIG SETTINGS ##
-ADMIN_USER="admin"
-ADMIN_PASS="password"
-SERVER_NAME=""
-LOCAL_DOMAIN=""
-CERT_DOMAIN=""
-CERT_COUNTRY="AU"
-CERT_STATE="Victoria"
-CERT_LOCATION="Melbourne"
-CERT_ORG="Itiligent"
-CERT_OU="SecOps"
-CERT_DAYS="3650"
-KEYSIZE=2048
-
-## OVERRIDE LATEST RELEASE AUTO SELECTION   eg. 22.9.1 or "" for latest ##
-FORCE_GVM_LIBS_VERSION=""                            # see https://github.com/greenbone/gvm-libs
-FORCE_GVMD_VERSION=""                                # see https://github.com/greenbone/gvmd
-FORCE_PG_GVM_VERSION=""                              # see https://github.com/greenbone/pg-gvm
-FORCE_GSA_VERSION=""                                 # see https://github.com/greenbone/gsa
-FORCE_GSAD_VERSION=""                                # see https://github.com/greenbone/gsad
-FORCE_OPENVAS_SMB_VERSION=""                         # see https://github.com/greenbone/openvas-smb
-FORCE_OPENVAS_SCANNER_VERSION=""                     # see https://github.com/greenbone/openvas-scanner
-FORCE_OSPD_OPENVAS_VERSION=""                        # see https://github.com/greenbone/ospd-openvas
-FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scanner
-
-## POSTGRESQL PACKAGE MANAGEMENT ##
- - This section manages distro specfic PostgresSQL package selection logic
-   (can be further expanded to support any distro flavour)
-
-## DEPENDENCY MANAGEMENT ##
- - This section manages debian based dependency installation commands for each GVM module
-   (can be further expanded to support any distro flavour))
-
-## PIP INSTALL MANAGMENT ##
- - This section manages pip install command variations between distros & Python versions
-  (can be further expanded to support any distro flavour)
-
-## OVERRIDE LATEST RELEASE AUTO DOWNLOAD ##
-This section allows forcing a specifc OpenVAS component version in case of issues
-```` 
+## 📖 Customising the build
+All script customisation options are managed in the top section of this script under the `CUSTOM CONFIG SETTINGS ` section.  Both the install and upgrade scripts will check GitHub for the latest releases for each module, although specific module versions can also forced in the `OVERRIDE LATEST RELEASE AUTO SELECTION `
 
 ## 📧 Adding Email Reporting to the Community Edition
 *(normally a pro version feature)*
