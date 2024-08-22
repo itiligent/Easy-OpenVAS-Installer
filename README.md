@@ -1,4 +1,4 @@
-# Greenbone Vulnerability Scanner Appliance Build Script
+# Greenbone / OpenVAS Scanner Appliance Build Script
 
 ### 📦 Auto Setup Link
 **(Do NOT run scripts as root, scripts will prompt for sudo)**
