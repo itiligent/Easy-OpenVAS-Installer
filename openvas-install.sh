@@ -846,36 +846,14 @@ RuntimeDirectory=gsad
 RuntimeDirectoryMode=2775
 PIDFile=/run/gsad/gsad.pid
 ExecStart=/usr/local/sbin/gsad --listen=0.0.0.0 --foreground --drop-privileges=gvm --port=443 --rport=80 -c $DIR_TLS_CERT/$CERT_DOMAIN.crt -k $DIR_TLS_KEY/$CERT_DOMAIN.key
-#ExecStart=/usr/local/sbin/gsad --foreground --listen=127.0.0.1 --port=9392 --http-only
+#ExecStart=/usr/local/sbin/gsad --foreground --listen=127.0.0.1 --port=9392 --http-only # Swap this line for http only. Change to 0.0.0.0 to bind with all interfaces
 Restart=always
 TimeoutStopSec=10
 [Install]
 WantedBy=multi-user.target
 Alias=greenbone-security-assistant.service
 EOF
-# If not using https, use this version of gsad.service
-#cat << EOF > $BUILD_DIR/gsad.service
-#[Unit]
-#Description=Greenbone Security Assistant daemon (gsad)
-#Documentation=man:gsad(8) https://www.greenbone.net
-#After=network.target gvmd.service
-#Wants=gvmd.service
-#
-#[Service]
-#Type=exec
-#User=gvm
-#Group=gvm
-#RuntimeDirectory=gsad
-#RuntimeDirectoryMode=2775
-#PIDFile=/run/gsad/gsad.pid
-#ExecStart=/usr/local/sbin/gsad --foreground --listen=127.0.0.1 --port=9392 --http-only
-#Restart=always
-#TimeoutStopSec=10
-#
-#[Install]
-#WantedBy=multi-user.target
-#Alias=greenbone-security-assistant.service
-#EOF
+
 sudo cp -v $BUILD_DIR/gsad.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable gsad
