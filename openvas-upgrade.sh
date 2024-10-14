@@ -26,7 +26,7 @@ FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scann
 COMMON_DEPS="sudo apt-get install --no-install-recommends --assume-yes build-essential curl cmake pkg-config python3 python3-pip gnupg wget sudo gnupg2 ufw htop git && sudo DEBIAN_FRONTEND="noninteractive" apt-get install postfix mailutils -y && sudo service postfix restart"
 
 # gvm-libs
-GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libssh-gcrypt-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz"
+GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libssh-gcrypt-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev"
 
 # gvmd
 GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libbsd-dev libgpgme-dev libcjson-dev"
