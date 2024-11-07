@@ -3,7 +3,7 @@
 # Greenbone Vulnerability Manager appliance build script (gvmd v23.x)
 # Multi-distro support for numerous Ubuntu, Debian & Raspbian variants
 # David Harrop
-# June 2024
+# January 2025
 #########################################################################################################################
 
 #########################################################################################################################
@@ -24,63 +24,59 @@ CERT_OU="SecOps"                      # For RSA SSL cert, Optional to change, mu
 CERT_DAYS="3650"                      # For RSA SSL cert, number of days until self signed certificate expiry
 KEYSIZE=2048                          # RSA certificate encryption strength
 
-## OVERRIDE LATEST RELEASE AUTO SELECTION   eg. 22.9.1 or "" for latest ##
+## FORCE PACKAGE VERSIONS or use blank "" to automatically download latest
 FORCE_GVM_LIBS_VERSION=""                            # see https://github.com/greenbone/gvm-libs
 FORCE_GVMD_VERSION=""                                # see https://github.com/greenbone/gvmd
 FORCE_PG_GVM_VERSION=""                              # see https://github.com/greenbone/pg-gvm
 FORCE_GSA_VERSION=""                                 # see https://github.com/greenbone/gsa
 FORCE_GSAD_VERSION=""                                # see https://github.com/greenbone/gsad
 FORCE_OPENVAS_SMB_VERSION=""                         # see https://github.com/greenbone/openvas-smb
-FORCE_OPENVAS_SCANNER_VERSION=""                     # see https://github.com/greenbone/openvas-scanner
+FORCE_OPENVAS_SCANNER_VERSION=""  				     # see https://github.com/greenbone/openvas-scanner
 FORCE_OSPD_OPENVAS_VERSION=""                        # see https://github.com/greenbone/ospd-openvas
 FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scanner
 
-## POSTGRESQL PACKAGE MANAGEMENT ##
+## POSTGRESQL VERSION MANAGEMENT ##
 source /etc/os-release
-export OFFICIAL_POSTGRESQL="false"    # True = Force official Posgresql source repo
-# Or override the Postgresql version with a specific distro supplied package.
-if [[ "${OFFICIAL_POSTGRESQL}" == "true" ]]; then
-    export POSTGRESQL="postgresql-15 postgresql-server-dev-15"
- elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && "${VERSION_CODENAME,,}" == *"bullseye"* ]]; then
-    # Distro no longer contains supported Postgresql version packages, forcing official repo
-    export OFFICIAL_POSTGRESQL="true"
-    export POSTGRESQL="postgresql-15 postgresql-server-dev-15"
-elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && "${VERSION_CODENAME,,}" == *"jammy"* ]]; then
-    export POSTGRESQL="postgresql postgresql-server-dev-14"
-elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && "${VERSION_CODENAME,,}" == *"bookworm"* ]]; then
-    export POSTGRESQL="postgresql postgresql-server-dev-15"
-elif [[ "${OFFICIAL_POSTGRESQL}" != "true" && ( "${VERSION_CODENAME,,}" == *"trixie"* || "${VERSION_CODENAME,,}" == *"noble"* ) ]]; then
-    # Distro no longer contains supported Postgresql version packages, forcing official repo
-    export OFFICIAL_POSTGRESQL="true"
-    export POSTGRESQL="postgresql-15 postgresql-server-dev-15"
-else
-    # All other distros not listed will use supported Postgresql version from official source
-    export OFFICIAL_POSTGRESQL="true"
-    export POSTGRESQL="postgresql-15 postgresql-server-dev-15"
-fi
+OFFICIAL_POSTGRESQL="false" # Default = false, true = force official Posgresql source repo
+case "${VERSION_CODENAME,,}" in
+    *bookworm*)
+		OFFICIAL_POSTGRESQL="false"
+        POSTGRESQL="postgresql postgresql-server-dev-15"
+        ;;
 
-## DEPENDENCY MANAGEMENT ## (Any changes here must be replicated in the upgrade script)
+    *noble*|*trixie*)
+		OFFICIAL_POSTGRESQL="false"
+        POSTGRESQL="postgresql postgresql-server-dev-16"
+        ;;
+    *)
+        OFFICIAL_POSTGRESQL="true" # Default to official source if no disto match
+        POSTGRESQL="postgresql-16 postgresql-server-dev-16"
+        ;;
+esac
+
+## DEPENDENCY MANAGEMENT (Any changes here must be replicated in the upgrade script)
 # common
 COMMON_DEPS="sudo apt-get install --no-install-recommends --assume-yes build-essential curl cmake pkg-config python3 python3-pip gnupg wget sudo gnupg2 ufw htop git && sudo DEBIAN_FRONTEND="noninteractive" apt-get install postfix mailutils -y && sudo service postfix restart"
 
 # gvm-libs
-GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libssh-gcrypt-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev"
+GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libssh-gcrypt-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev lcov libcurl4-gnutls-dev libgcrypt-dev "
+# extras above greenbone docs: doxygen xmltoman graphviz libcjson-dev lcov  (libcurl4-openssl-dev or libcurl4-gnutls-dev) libgcrypt-dev
 
 # gvmd
-GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libbsd-dev libgpgme-dev libcjson-dev"
-GVMD_DEPS2="sudo apt-get install -y --no-install-recommends texlive-latex-extra texlive-fonts-recommended xmlstarlet zip rpm fakeroot dpkg nsis gnupg gpgsm wget sshpass openssh-client socat snmp python3 smbclient python3-lxml gnutls-bin xml-twig-tools"
-
-# gsad
-GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev libgnutls28-dev libbrotli-dev"
+GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libbsd-dev libgpgme-dev libcjson-dev" # extras above greenbone docs: libcjson-dev
+GVMD_DEPS2="sudo apt-get install -y --no-install-recommends texlive-latex-extra texlive-fonts-recommended xmlstarlet zip rpm fakeroot dpkg nsis gnupg gpgsm wget sshpass openssh-client socat snmp python3 smbclient python3-lxml gnutls-bin xml-twig-tools" # extras above greenbone docs: xml-twig-tools
 
 # pg-gvm
 PGGVM=DEPS="sudo apt-get install -y libglib2.0-dev libical-dev ${POSTGRESQL}"
 
+# gsad
+GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev libgnutls28-dev libbrotli-dev doxygen xmltoman" # extras above greenbone docs: libbrotli-dev libbrotli-dev doxygen xmltoman
+
 # openvas-smb
-OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev libpopt-dev libunistring-dev heimdal-dev perl-base"
+OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev libpopt-dev libunistring-dev heimdal-multidev perl-base" # extras above greenbone docs: substituted heimdal-dev for heimdal-multidev
 
 # openvas-scanner
-OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan"
+OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan krb5-multidev" # extras above greenbone docs: pandoc pnscan krb5-multidev
 
 # ospd-openvas
 OSPD_DEPS="sudo apt-get install -y python3 python3-pip python3-setuptools python3-packaging python3-wrapt python3-cffi python3-psutil python3-lxml python3-defusedxml python3-paramiko python3-redis python3-gnupg python3-paho-mqtt"
@@ -95,50 +91,39 @@ GVMTOOLS_DEPS="sudo apt-get install -y python3 python3-pip python3-venv python3-
 REDIS_DEPS="sudo apt-get install -y redis-server"
 
 # openvasd (Any changes here must be replicated in the upgrade script)
-if [[ "${VERSION_CODENAME,,}" == *"bullseye"* ]] || [[ "${VERSION_CODENAME,,}" == *"bookworm"* ]]; then
-    OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
-    SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\""
-elif [[ "${VERSION_CODENAME,,}" == *"jammy"* ]]; then
-    OPENVASD_DEPS="sudo apt-get install -y -qq pkg-config libssl-dev cargo"
-    SOURCE_CARGO_ENV=""
-elif [[ "${VERSION_CODENAME,,}" == *"noble"* ]]; then
-    OPENVASD_DEPS="sudo apt-get install -y -qq pkg-config libssl-dev rust-all"
-    SOURCE_CARGO_ENV=""
-else
-    # Default dependencies
-    OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
-    SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\""
-fi
+case "${VERSION_CODENAME,,}" in
+    *bookworm*|*noble*|*trixie*)  # Options to handle various distros
+        OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
+		SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\""
+        ;;
+    *) # Default to this if no disto match
+        OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
+		SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\"": # No specific action for other codenames either
+        ;;
+esac
 
 ## PIP INSTALL MANAGMENT ## (Any changes here must be replicated in the upgrade script)
-# Bullseye
-if [[ "${VERSION_CODENAME,,}" == *"bullseye"* ]]; then
-    PIP_SUDO_OSPD=""                                  # add "sudo" to ospd install cmd
-    PIP_SUDO_FEED=""                                  # add "sudo" to greenbone-feed-updates install cmd
-    PIP_SUDO_TOOLS=""                                 # add "sudo" to gvm-tools install cmd
-    PIP_OPTIONS="--no-warn-script-location --system"  # pip install arguments
-	PIP_UNINSTALL=""
 # Bookworm
-elif [[ "${VERSION_CODENAME,,}" == *"bookworm"* ]]; then
-    PIP_SUDO_OSPD=""
-    PIP_SUDO_FEED=""
-    PIP_SUDO_TOOLS=""
-    PIP_OPTIONS="--no-warn-script-location"
-	PIP_UNINSTALL="--break-system-packages"
+if [[ "${VERSION_CODENAME,,}" == *"bookworm"* ]]; then
+    PIP_SUDO_OSPD="" 						# add "sudo" to ospd install cmd
+    PIP_SUDO_FEED=""  						# add "sudo" to greenbone-feed-updates install cmd
+    PIP_SUDO_TOOLS=""  						# add "sudo" to gvm-tools install cmd
+    PIP_OPTIONS="--no-warn-script-location" # pip install arguments
+    PIP_UNINSTALL="--break-system-packages" # pip uninstall arguments
 # Ubuntu 23.04 & 24.04
 elif  [[ "${VERSION_CODENAME,,}" == *"noble"* ]]; then
     PIP_SUDO_OSPD="sudo"
     PIP_SUDO_FEED=""
     PIP_SUDO_TOOLS=""
     PIP_OPTIONS="--no-warn-script-location"
-	PIP_UNINSTALL="--break-system-packages"
+    PIP_UNINSTALL="--break-system-packages"
 else
 # All other distros
     PIP_SUDO_OSPD=""
     PIP_SUDO_FEED=""
     PIP_SUDO_TOOLS=""
     PIP_OPTIONS="--no-warn-script-location"
-	PIP_UNINSTALL="--break-system-packages"
+    PIP_UNINSTALL="--break-system-packages"
 fi
 
 #########################################################################################################################
@@ -183,7 +168,7 @@ clear
 # Script branding header
 echo
 echo -e "${GREYB} Itiligent GVM/OpenVAS Appliance Builder"
-echo -e "                     ${LGREENB}Powered by Greenbone${GREY}"
+echo -e "                    ${LGREENB}Powered by Greenbone${GREY}"
 echo
 echo
 
@@ -299,7 +284,7 @@ if [[ -z ${LOCAL_DOMAIN} ]]; then
     fi
     echo
     # A LOCAL_DOMAIN value was derived via the prompt
-    # Remove any old localhost & resolv file values & update these with the new LOCAL_DOMAIN value
+    # Removes any old localhost & resolv file values & update these with the new LOCAL_DOMAIN value
 	$(sudo systemctl restart systemd-hostnamed &>/dev/null &) &>/dev/null
 	sleep 1
     sudo sed -i "/${DEFAULT_IP}/d" /etc/hosts
@@ -430,7 +415,7 @@ echo -e "Common dependencies installed successfully..."
 
 echo
 echo -e "${LGREEN}###############################################################################"
-echo -e " Checking latest OpenVAS releases - edit script to manually force a version"
+echo -e " Checking latest OpenVAS GitHub releases - edit script to force a version"
 echo -e "###############################################################################${NC}"
 echo
 # Check for the latest OpenVAS release tags from GitHub
@@ -451,7 +436,8 @@ declare -A repos=(
     ["OPENVAS_SCANNER_VERSION"]="greenbone/openvas-scanner"
     ["OSPD_OPENVAS_VERSION"]="greenbone/ospd-openvas"
 )
-echo -e " ${LGREEN}Latest OpenVAS releases will be installed by default:${NC}"
+
+echo -e " ${LGREEN}Latest OpenVAS package releases available:${NC}"
 # Get latest OpenVAS versions
 for version in "${!repos[@]}"; do
     latest_version=$(get_latest_release "${repos[$version]}")
@@ -462,6 +448,7 @@ for version in "${!repos[@]}"; do
     export $version=$latest_version
     echo " $version=$latest_version"
 done
+
 # openvasd uses the same repo as scanner
 export OPENVAS_DAEMON=$OPENVAS_SCANNER_VERSION
 echo " OPENVAS_DAEMON=$OPENVAS_SCANNER_VERSION"
@@ -846,14 +833,14 @@ RuntimeDirectory=gsad
 RuntimeDirectoryMode=2775
 PIDFile=/run/gsad/gsad.pid
 ExecStart=/usr/local/sbin/gsad --listen=0.0.0.0 --foreground --drop-privileges=gvm --port=443 --rport=80 -c $DIR_TLS_CERT/$CERT_DOMAIN.crt -k $DIR_TLS_KEY/$CERT_DOMAIN.key
-#ExecStart=/usr/local/sbin/gsad --foreground --listen=127.0.0.1 --port=9392 --http-only # Swap this line for http only. Change to 0.0.0.0 to bind with all interfaces
+# ExecStart=/usr/local/sbin/gsad --foreground --listen=127.0.0.1 --port=9392 --http-only # Swap this line for http only. Change to 0.0.0.0 to bind with all interfaces
 Restart=always
 TimeoutStopSec=10
+
 [Install]
 WantedBy=multi-user.target
 Alias=greenbone-security-assistant.service
 EOF
-
 sudo cp -v $BUILD_DIR/gsad.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable gsad
@@ -1081,13 +1068,22 @@ gpg --verify $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON.tar.gz.asc $SOURCE_DIR/
 echo
 tar -C $SOURCE_DIR -xvzf $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON.tar.gz
 mkdir -p $INSTALL_DIR/openvasd/usr/local/bin
-cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/openvasd
+cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/src/openvasd
 cargo build --release
-sudo cp -v ../target/release/openvasd $INSTALL_DIR/openvasd/usr/local/bin/
-cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/scannerctl
+cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/src/scannerctl
 cargo build --release
-sudo cp -v ../target/release/scannerctl $INSTALL_DIR/openvasd/usr/local/bin/
+sudo cp -v ../../target/release/openvasd $INSTALL_DIR/openvasd/usr/local/bin/
+sudo cp -v ../../target/release/scannerctl $INSTALL_DIR/openvasd/usr/local/bin/
 sudo cp -rv $INSTALL_DIR/openvasd/* /
+
+# 29.9.0 and prior - build instructions reference previous source file paths 
+##cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/openvasd # 23.9.0 and prior
+# cargo build --release
+##cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/scannerctl # 23.9.0 and prior
+# cargo build --release
+##sudo cp -v ../target/release/scannerctl $INSTALL_DIR/openvasd/usr/local/bin/
+##sudo cp -rv $INSTALL_DIR/openvasd/* /
+
 cat << EOF > $BUILD_DIR/openvasd.service
 [Unit]
 Description=OpenVASD
@@ -1350,6 +1346,6 @@ printf "${LGREEN}+##############################################################
 
 # Final change password message
 echo
-echo -e "${LGREEN}OpenVAS build complete\nManagement console = https://${CERT_DOMAIN} - admin username: ${ADMIN_USER} pass: ${ADMIN_PASS}\n${LPURPLEB}Be sure to change the admin password with:"
-echo -e sudo /usr/local/sbin/gvmd --user=username --new-password=newpassword
+echo -e "${LGREEN}OpenVAS build complete\nManagement console = https://${CERT_DOMAIN} | username: ${ADMIN_USER} | password: ${ADMIN_PASS}\n${LPURPLEB} | You may change the admin password with:"
+echo -e sudo /usr/local/sbin/gvmd --user=${DEFAULT_ADMIN_USER} --new-password=password
 echo -e ${NC}
