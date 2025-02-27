@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash firoj0
 #########################################################################################################################
 # Greenbone Vulnerability Manager appliance upgrade script
 # Multi-distro support for Ubuntu, Debian & Raspbian
