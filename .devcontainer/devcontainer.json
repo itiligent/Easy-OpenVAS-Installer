@@ -1,0 +1,17 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {}
+}
+{
+    "नाम": "मेरा-प्रोजेक्ट-devcontainer",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu", // कोई भी सामान्य, डेबियन-आधारित छवि.
+    "विशेषताएँ": {
+        "ghcr.io/devcontainers/features/go:1": {
+            "संस्करण": "1.18"
+        },
+        "ghcr.io/devcontainers/features/docker-in-docker:1": {
+            "संस्करण": "नवीनतम",
+            "मोबी": सच
+        }
+    }
+}
