@@ -1,5 +1,7 @@
 # Greenbone OpenVAS Scanner Build & Upgrade Scripts
 
+#### Note: Greenboe continuously makes many substantive changes with dependencies (and not documenting them!), so from time to time this will need some tweaking to work.  
+
 ### 📦 Auto install link
 (Do NOT run scripts as root, they will prompt for sudo)
 ```bash
