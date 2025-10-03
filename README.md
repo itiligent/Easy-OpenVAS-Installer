@@ -1,7 +1,9 @@
 # Greenbone OpenVAS Scanner Build & Upgrade Scripts
 
+#### Note: Greenbone makes many substantive changes with dependencies (and not documenting them!), so from time to time this will need some tweaking to work.  
+
 ### 📦 Auto install link
-(Do NOT run scripts as root, they will prompt for sudo)
+(Do NOT run script as root, it will prompt for sudo)
 ```bash
 wget https://raw.githubusercontent.com/itiligent/Easy-OpenVAS-Installer/main/openvas-install.sh && chmod +x openvas-install.sh && ./openvas-install.sh
 ```
@@ -19,7 +21,7 @@ wget https://raw.githubusercontent.com/itiligent/Easy-OpenVAS-Installer/main/ope
 
 #### Script defaults will build OpenVAS from latest GithHub release source
 - **Supported OS:**
-  - **Debian 12.x Stable | Ubuntu 24.x LTS** | **Raspbian Bookworm**
+  - **Debian 12 & 13 Stable | Ubuntu 24.x LTS** | Raspbian Bookworm
 - **Required packages**:
   - curl & sudo 
 - **Hardware**:
