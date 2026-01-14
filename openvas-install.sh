@@ -76,7 +76,7 @@ GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev 
 OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev libpopt-dev libunistring-dev heimdal-multidev perl-base" # extras above greenbone docs: substituted heimdal-dev for heimdal-multidev
 
 # openvas-scanner
-OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan krb5-multidev" # extras above greenbone docs: pandoc pnscan krb5-multidev
+OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan krb5-multidev libmagic-dev" # extras above greenbone docs: pandoc pnscan krb5-multidev
 
 # ospd-openvas
 OSPD_DEPS="sudo apt-get install -y python3 python3-pip python3-setuptools python3-packaging python3-wrapt python3-cffi python3-psutil python3-lxml python3-defusedxml python3-paramiko python3-redis python3-gnupg python3-paho-mqtt"
