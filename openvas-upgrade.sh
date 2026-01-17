@@ -45,24 +45,24 @@ esac
 COMMON_DEPS="sudo apt-get install --no-install-recommends --assume-yes build-essential curl cmake pkg-config python3 python3-pip gnupg wget sudo gnupg2 ufw htop git && sudo DEBIAN_FRONTEND="noninteractive" apt-get install postfix mailutils -y && sudo service postfix restart"
 
 # gvm-libs
-GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libssh-gcrypt-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev lcov libcurl4-gnutls-dev libgcrypt-dev "
+GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev-bin libgpgme-dev libgnutls28-dev uuid-dev libssh-gcrypt-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev lcov libcurl4-gnutls-dev libgcrypt-dev "
 # extras above greenbone docs: doxygen xmltoman graphviz libcjson-dev lcov  (libcurl4-openssl-dev or libcurl4-gnutls-dev) libgcrypt-dev
 
 # gvmd
-GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libbsd-dev libgpgme-dev libcjson-dev" # extras above greenbone docs: libcjson-dev
+GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev-bin libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libbsd-dev libgpgme-dev libcjson-dev" # extras above greenbone docs: libcjson-dev
 GVMD_DEPS2="sudo apt-get install -y --no-install-recommends texlive-latex-extra texlive-fonts-recommended xmlstarlet zip rpm fakeroot dpkg nsis gnupg gpgsm wget sshpass openssh-client socat snmp python3 smbclient python3-lxml gnutls-bin xml-twig-tools" # extras above greenbone docs: xml-twig-tools
 
 # pg-gvm
-PGGVM=DEPS="sudo apt-get install -y libglib2.0-dev libical-dev ${POSTGRESQL}"
+PGGVM=DEPS="sudo apt-get install -y libglib2.0-dev-bin libical-dev ${POSTGRESQL}"
 
 # gsad
-GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev libgnutls28-dev libbrotli-dev doxygen xmltoman" # extras above greenbone docs: libbrotli-dev libbrotli-dev doxygen xmltoman
+GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev-bin libgnutls28-dev libbrotli-dev doxygen xmltoman" # extras above greenbone docs: libbrotli-dev libbrotli-dev doxygen xmltoman
 
 # openvas-smb
-OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev libpopt-dev libunistring-dev heimdal-multidev perl-base" # extras above greenbone docs: substituted heimdal-dev for heimdal-multidev
+OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev-bin libpopt-dev libunistring-dev heimdal-multidev perl-base" # extras above greenbone docs: substituted heimdal-dev for heimdal-multidev
 
 # openvas-scanner
-OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan krb5-multidev" # extras above greenbone docs: pandoc pnscan krb5-multidev
+OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev-bin libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan krb5-multidev libmagic-dev"
 
 # ospd-openvas
 OSPD_DEPS="sudo apt-get install -y python3 python3-pip python3-setuptools python3-packaging python3-wrapt python3-cffi python3-psutil python3-lxml python3-defusedxml python3-paramiko python3-redis python3-gnupg python3-paho-mqtt"
