@@ -3,7 +3,7 @@
 # Greenbone Vulnerability Manager appliance upgrade script
 # Multi-distro support for Ubuntu, Debian & Raspbian
 # David Harrop
-# January 2025
+# January 2026
 #########################################################################################################################
 
 #########################################################################################################################
@@ -11,8 +11,8 @@
 #########################################################################################################################
 
 ## CUSTOM CONFIG SETTINGS ##
-DEFAULT_ADMIN_USER="admin"                    # Set the GVM default admin account username
-DEFAULT_ADMIN_PASS="password"                 # Set the GVM default admin account password
+DEFAULT_ADMIN_USER="admin"            # Set the GVM default admin account username
+DEFAULT_ADMIN_PASS="password"         # Set the GVM default admin account password
 SERVER_NAME=""                        # Preferred server hostname (installer will prompt if left blank)
 LOCAL_DOMAIN=""                       # Local DNS suffix (defaults to hostname.dns-suffix if left blank)
 CERT_DOMAIN=""                        # TLS certificate dns domain (defaults to hostname.dns-suffix if left blank)
@@ -25,14 +25,14 @@ CERT_DAYS="3650"                      # For RSA SSL cert, number of days until s
 KEYSIZE=2048                          # RSA certificate encryption strength
 
 ## FORCE PACKAGE VERSIONS or use blank "" to automatically download latest
-FORCE_GVM_LIBS_VERSION=""                            # see https://github.com/greenbone/gvm-libs
-FORCE_GVMD_VERSION=""                                # see https://github.com/greenbone/gvmd
-FORCE_PG_GVM_VERSION=""                              # see https://github.com/greenbone/pg-gvm
-FORCE_GSA_VERSION=""                                 # see https://github.com/greenbone/gsa
-FORCE_GSAD_VERSION=""                                # see https://github.com/greenbone/gsad
-FORCE_OPENVAS_SMB_VERSION=""                         # see https://github.com/greenbone/openvas-smb
-FORCE_OPENVAS_SCANNER_VERSION=""  				     # see https://github.com/greenbone/openvas-scanner
-FORCE_OSPD_OPENVAS_VERSION=""                        # see https://github.com/greenbone/ospd-openvas
+FORCE_GVM_LIBS_VERSION=""             # see https://github.com/greenbone/gvm-libs
+FORCE_GVMD_VERSION=""                 # see https://github.com/greenbone/gvmd
+FORCE_PG_GVM_VERSION=""               # see https://github.com/greenbone/pg-gvm
+FORCE_GSA_VERSION=""                  # see https://github.com/greenbone/gsa
+FORCE_GSAD_VERSION=""                 # see https://github.com/greenbone/gsad
+FORCE_OPENVAS_SMB_VERSION=""          # see https://github.com/greenbone/openvas-smb
+FORCE_OPENVAS_SCANNER_VERSION=""  	  # see https://github.com/greenbone/openvas-scanner
+FORCE_OSPD_OPENVAS_VERSION=""         # see https://github.com/greenbone/ospd-openvas
 FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scanner
 
 ## POSTGRESQL VERSION MANAGEMENT ##
@@ -44,36 +44,42 @@ case "${VERSION_CODENAME,,}" in
         POSTGRESQL="postgresql postgresql-server-dev-15"
         ;;
 
-    *noble*|*trixie*)
+	*noble*)
 		OFFICIAL_POSTGRESQL="false"
         POSTGRESQL="postgresql postgresql-server-dev-16"
         ;;
+
+	*trixie*)
+		OFFICIAL_POSTGRESQL="false"
+        POSTGRESQL="postgresql postgresql-server-dev-17"
+        ;;
+
     *)
         OFFICIAL_POSTGRESQL="true" # Default to official source if no disto match
         POSTGRESQL="postgresql-16 postgresql-server-dev-16"
         ;;
 esac
 
+
 ## DEPENDENCY MANAGEMENT (Any changes here must be replicated in the upgrade script)
 # common
-COMMON_DEPS="sudo apt-get install --no-install-recommends --assume-yes build-essential curl cron cmake pkg-config python3 python3-pip gnupg wget sudo gnupg2 ufw htop git && sudo DEBIAN_FRONTEND="noninteractive" apt-get install postfix mailutils -y && sudo service postfix restart"
+COMMON_DEPS='sudo apt-get install --no-install-recommends --assume-yes build-essential curl cron cmake pkg-config python3 python3-pip gnupg wget sudo gnupg2 ufw htop git && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postfix mailutils && sudo service postfix restart'
 
 # gvm-libs
-GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libssh-gcrypt-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev lcov libcurl4-gnutls-dev libgcrypt-dev "
-# extras above greenbone docs: doxygen xmltoman graphviz libcjson-dev lcov  (libcurl4-openssl-dev or libcurl4-gnutls-dev) libgcrypt-dev
+GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev lcov libcurl4-gnutls-dev libgcrypt20-dev libssh-dev"
 
 # gvmd
-GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libbsd-dev libgpgme-dev libcjson-dev" # extras above greenbone docs: libcjson-dev
-GVMD_DEPS2="sudo apt-get install -y --no-install-recommends texlive-latex-extra texlive-fonts-recommended xmlstarlet zip rpm fakeroot dpkg nsis gnupg gpgsm wget sshpass openssh-client socat snmp python3 smbclient python3-lxml gnutls-bin xml-twig-tools" # extras above greenbone docs: xml-twig-tools
+GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libgpgme-dev libcjson-dev libbsd-dev"
+GVMD_DEPS2="sudo apt-get install -y --no-install-recommends texlive-latex-extra texlive-fonts-recommended xmlstarlet zip rpm fakeroot dpkg nsis gnupg gpgsm wget sshpass openssh-client socat snmp python3 smbclient python3-lxml gnutls-bin xml-twig-tools"
 
 # pg-gvm
-PGGVM=DEPS="sudo apt-get install -y libglib2.0-dev libical-dev ${POSTGRESQL}"
+PGGVM_DEPS="sudo apt-get install -y libglib2.0-dev libical-dev ${POSTGRESQL}"
 
 # gsad
-GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev libgnutls28-dev libbrotli-dev doxygen xmltoman" # extras above greenbone docs: libbrotli-dev libbrotli-dev doxygen xmltoman
+GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev libgnutls28-dev libbrotli-dev doxygen xmltoman"
 
 # openvas-smb
-OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev libpopt-dev libunistring-dev heimdal-multidev perl-base" # extras above greenbone docs: substituted heimdal-dev for heimdal-multidev
+OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev libpopt-dev libunistring-dev heimdal-multidev perl-base"
 
 # openvas-scanner
 OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan krb5-multidev libmagic-dev" 
@@ -96,11 +102,12 @@ case "${VERSION_CODENAME,,}" in
         OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
 		SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\""
         ;;
-    *) # Default to this if no disto match
+    *) # Default to this and customise if necessary
         OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
-		SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\"": # No specific action for other codenames either
+		SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\"" # No specific action for other codenames either
         ;;
 esac
+
 
 ## PIP INSTALL MANAGMENT ## (Any changes here must be replicated in the upgrade script)
 # Bookworm
@@ -110,21 +117,32 @@ if [[ "${VERSION_CODENAME,,}" == *"bookworm"* ]]; then
     PIP_SUDO_TOOLS=""  						# add "sudo" to gvm-tools install cmd
     PIP_OPTIONS="--no-warn-script-location" # pip install arguments
     PIP_UNINSTALL="--break-system-packages" # pip uninstall arguments
-# Ubuntu 23.04 & 24.04
+
+# Ubuntu 24.0
 elif  [[ "${VERSION_CODENAME,,}" == *"noble"* ]]; then
     PIP_SUDO_OSPD="sudo"
     PIP_SUDO_FEED=""
     PIP_SUDO_TOOLS=""
     PIP_OPTIONS="--no-warn-script-location"
     PIP_UNINSTALL="--break-system-packages"
+
+# Debian 13
+elif [[ "${VERSION_CODENAME,,}" == *"trixie"* ]]; then
+    PIP_SUDO_OSPD="sudo"
+    PIP_SUDO_FEED=""
+    PIP_SUDO_TOOLS="sudo"
+    PIP_OPTIONS="--no-warn-script-location"
+    PIP_UNINSTALL="--break-system-packages"
+
 else
-# All other distros
+# All other distros - try your luck customising here
     PIP_SUDO_OSPD=""
     PIP_SUDO_FEED=""
     PIP_SUDO_TOOLS=""
     PIP_OPTIONS="--no-warn-script-location"
     PIP_UNINSTALL="--break-system-packages"
 fi
+
 
 #########################################################################################################################
 # Start of script actions - NO NEED TO EDIT BELOW THIS POINT ############################################################
@@ -165,6 +183,7 @@ fi
 
 clear
 
+
 # Script branding header
 echo
 echo -e "${GREYB} Itiligent GVM/OpenVAS Appliance Builder"
@@ -179,8 +198,10 @@ export SOURCE_DIR=$HOME/source
 export BUILD_DIR=$HOME/build
 export INSTALL_DIR=$HOME/install
 
+
 # Get the default route interface IP address as we need this for TLS certificate creation later
 DEFAULT_IP=$(ip addr show $(ip route | awk '/default/ { print $5 }') | grep "inet" | head -n 1 | awk '/inet/ {print $2}' | cut -d'/' -f1)
+
 
 # An intitial dns suffix is needed as a starting value for the script prompts.
 get_domain_suffix() {
@@ -239,6 +260,7 @@ mkdir -p $SOURCE_DIR
 mkdir -p $BUILD_DIR
 mkdir -p $INSTALL_DIR
 echo
+
 
 #########################################################################################################################
 # Install menu prompts ##################################################################################################
@@ -342,29 +364,36 @@ echo -e "${LPURPLEB} GVM web console admin account name [Enter to use: ${DEFAULT
      fi
 done
 
+
 echo
 echo -e "${LGREEN}###############################################################################"
 echo -e " Updating Linux OS"
 echo -e "###############################################################################${NC}"
 echo
 spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
+  local pid="$1"
+  local msg="${2:-Working}"
+  local delay=0.12
+  local frames='|/-\'
+  local i=0
+
+  # Hide cursor (restore on exit from this function)
+  tput civis 2>/dev/null || true
+
+  # Loop while process exists
+  while kill -0 "$pid" 2>/dev/null; do
+    printf "\r${LPURPLE}[%c]${NC} %s" "${frames:i%${#frames}:1}" "$msg"
+    i=$((i + 1))
+    sleep "$delay"
+  done
+
+  # Clear the line and show cursor again
+  printf "\r\033[K"
+  tput cnorm 2>/dev/null || true
 }
+
 (
-    # Update Linux base
+	# Update Linux base
     sudo apt-get update &>/dev/null
     sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade -qq
 
@@ -375,43 +404,50 @@ spin() {
         sudo wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/apt.postgresql.org.asc >/dev/null
         sudo apt-get update -qq &>/dev/null
     fi
+
 ) &
-spin
+pid=$!
+spin "$pid" "Updating Linux OS"
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
 echo
-echo "Linux updated successfully...."
+echo -e "${LGREEN}Linux updated successfully...${NC}"
+
 
 echo
 echo -e "${LGREEN}###############################################################################"
 echo -e " Installing common dependencies"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
-    # Install dependencies
+    # Install common dependencies
     eval $COMMON_DEPS &>/dev/null
 	# Import the Greenbone Community Signing Key
     curl -f -L https://www.greenbone.net/GBCommunitySigningKey.asc -o /tmp/GBCommunitySigningKey.asc
     gpg --import /tmp/GBCommunitySigningKey.asc
     echo "8AE4BE429B60A59B311C2E739823FAA60ED1E580:6:" | gpg --import-ownertrust
+
 ) &
-spin
+pid=$!
+spin "$pid" "Installing common dependendies..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
 echo
-echo -e "Common dependencies installed successfully..."
+echo -e "${LGREEN}Common dependencies installed successfully...${NC}"
+
 
 echo
 echo -e "${LGREEN}###############################################################################"
@@ -512,33 +548,28 @@ if [[ -n $FORCE_OPENVAS_DAEMON ]]; then
   echo -e "${LYELLOW} OPENVAS_DAEMON=$FORCE_OPENVAS_DAEMON${NC}"
 fi
 
+
 echo
 echo -e "${LGREEN}###############################################################################"
 echo -e " Building & installing gvm-libs $GVM_LIBS_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $GVMLIBS_DEPS &>/dev/null
 ) &
-spin
-echo "gvm-libs dependencies installed successfully..."
+pid=$!
+spin "$pid" "Installing gvm-libs packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}gvm-libs dependencies installed successfully...${NC}"
 echo
 
 # Download the gvm-libs sources
@@ -561,7 +592,8 @@ make -j$(nproc)
 # Install gvm-libs
 mkdir -p $INSTALL_DIR/gvm-libs
 make DESTDIR=$INSTALL_DIR/gvm-libs install
-sudo cp -rv $INSTALL_DIR/gvm-libs/* /
+sudo cp -rvf $INSTALL_DIR/gvm-libs/* /
+
 
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
@@ -570,29 +602,23 @@ echo -e "${LGREEN}##############################################################
 echo -e " Building & installing gvmd $GVMD_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $GVMD_DEPS1 &>/dev/null
     eval $GVMD_DEPS2 &>/dev/null
 ) &
-spin
-echo "gvmd dependencies installed successfully..."
+pid=$!
+spin "$pid" "Installing gvmd packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}gvmd dependencies installed successfully..${NC}"
 echo
 
 # Download the gvm-libs sources
@@ -621,7 +647,7 @@ make -j$(nproc)
 # Install gvmd
 mkdir -p $INSTALL_DIR/gvmd
 make DESTDIR=$INSTALL_DIR/gvmd install
-sudo cp -rv $INSTALL_DIR/gvmd/* /
+sudo cp -rvf $INSTALL_DIR/gvmd/* /
 cat << EOF > $BUILD_DIR/gvmd.service
 [Unit]
 Description=Greenbone Vulnerability Manager daemon (gvmd)
@@ -648,6 +674,7 @@ sudo cp -v $BUILD_DIR/gvmd.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable gvmd
 
+
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
 echo -e ${NC}
@@ -655,28 +682,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Building & installing pg-gvm $PG_GVM_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $PGGVM_DEPS &>/dev/null
 ) &
-spin
-echo "pg-gvm dependencies installed successfully..."
+pid=$!
+spin "$pid" "Installing pg-gvm packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}pg-gvm dependencies installed successfully...${NC}"
 echo
 
 # Download the pg-gvm sources
@@ -696,7 +717,8 @@ make -j$(nproc)
 # Install pg-gvm
 mkdir -p $INSTALL_DIR/pg-gvm
 make DESTDIR=$INSTALL_DIR/pg-gvm install
-sudo cp -rv $INSTALL_DIR/pg-gvm/* /
+sudo cp -rvf $INSTALL_DIR/pg-gvm/* /
+
 
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
@@ -715,7 +737,8 @@ echo
     mkdir -p $SOURCE_DIR/gsa-$GSA_VERSION
     tar -C $SOURCE_DIR/gsa-$GSA_VERSION -xvzf $SOURCE_DIR/gsa-$GSA_VERSION.tar.gz
     sudo mkdir -p $INSTALL_PREFIX/share/gvm/gsad/web/
-    sudo cp -rv $SOURCE_DIR/gsa-$GSA_VERSION/* $INSTALL_PREFIX/share/gvm/gsad/web/
+    sudo cp -rvf $SOURCE_DIR/gsa-$GSA_VERSION/* $INSTALL_PREFIX/share/gvm/gsad/web/
+
 
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
@@ -724,28 +747,22 @@ echo -e "${LGREEN}##############################################################
 echo -e "Building & installing gsad, adding certificates for https:443 console access"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $GSAD_DEPS &>/dev/null
 ) &
-spin
-echo "gsad dependencies installed successfully..."
+pid=$!
+spin "$pid" "Installing gsad packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}gsad dependencies installed successfully...${NC}"
 echo
 
 # Start TLS certificate creation - remove this for http only
@@ -791,7 +808,7 @@ sudo mv $CERT_DOMAIN.pfx $DIR_TLS_CERT/$CERT_DOMAIN.pfx
 sudo mv $CERT_DOMAIN.key $DIR_TLS_KEY/$CERT_DOMAIN.key
 sudo chmod 644 -R $DIR_TLS_CERT
 sudo chmod 644 -R $DIR_TLS_KEY
-# End TLS certificate creation 
+# End TLS certificate creation
 
 # Download gsad sources
 echo
@@ -817,7 +834,8 @@ make -j$(nproc)
 # Install gsad
 mkdir -p $INSTALL_DIR/gsad
 make DESTDIR=$INSTALL_DIR/gsad install
-sudo cp -rv $INSTALL_DIR/gsad/* /
+sudo cp -rvf $INSTALL_DIR/gsad/* /
+
 cat << EOF > $BUILD_DIR/gsad.service
 [Unit]
 Description=Greenbone Security Assistant daemon (gsad)
@@ -852,28 +870,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Building & installing openvas-smb $OPENVAS_SMB_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $OPENVASSMB_DEPS &>/dev/null
 ) &
-spin
-echo "openvas-smb dependencies installed successfully..."
+pid=$!
+spin "$pid" "Installing openvas-smb packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}openvas-smb dependencies installed successfully...${NC}"
 echo
 
 # Download the openvas-smb sources
@@ -894,7 +906,8 @@ make -j$(nproc)
 # Install openvas-smb
 mkdir -p $INSTALL_DIR/openvas-smb
 make DESTDIR=$INSTALL_DIR/openvas-smb install
-sudo cp -rv $INSTALL_DIR/openvas-smb/* /
+sudo cp -rvf $INSTALL_DIR/openvas-smb/* /
+
 
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
@@ -903,28 +916,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Building & installing openvas-scanner $OPENVAS_SCANNER_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $OPENVASSCAN_DEPS &>/dev/null
 ) &
-spin
-echo "openvas-scanner dependencies installed successfully..."
+pid=$!
+spin "$pid" "Installing openvas-scanner packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}openvas-scanner dependencies installed successfully...${NC}"
 echo
 
 # Download openvas-scanner sources
@@ -950,9 +957,10 @@ make -j$(nproc)
 # Install openvas-scanner
 mkdir -p $INSTALL_DIR/openvas-scanner
 make DESTDIR=$INSTALL_DIR/openvas-scanner install
-sudo cp -rv $INSTALL_DIR/openvas-scanner/* /
+sudo cp -rvf $INSTALL_DIR/openvas-scanner/* /
 printf "table_driven_lsc = yes\n" | sudo tee /etc/openvas/openvas.conf
 sudo printf "openvasd_server = http://127.0.0.1:3000\n" | sudo tee -a /etc/openvas/openvas.conf
+
 
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
@@ -961,28 +969,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Building & installing ospd-openvas $OSPD_OPENVAS_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $OSPD_DEPS &>/dev/null
 ) &
-spin
-echo "ospd-openvas dependencies installed successfully..."
+pid=$!
+spin "$pid" "Installing ospd-openvas packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}ospd-openvas dependencies installed successfully...${NC}"
 echo
 
 # Download ospd-openvas sources
@@ -997,7 +999,7 @@ tar -C $SOURCE_DIR -xvzf $SOURCE_DIR/ospd-openvas-$OSPD_OPENVAS_VERSION.tar.gz
 cd $SOURCE_DIR/ospd-openvas-$OSPD_OPENVAS_VERSION
 mkdir -p $INSTALL_DIR/ospd-openvas
 ${PIP_SUDO_OSPD} python3 -m pip install --root=$INSTALL_DIR/ospd-openvas ${PIP_OPTIONS} .
-sudo cp -rv $INSTALL_DIR/ospd-openvas/* /
+sudo cp -rvf $INSTALL_DIR/ospd-openvas/* /
 cat << EOF > $BUILD_DIR/ospd-openvas.service
 [Unit]
 Description=OSPd Wrapper for the OpenVAS Scanner (ospd-openvas)
@@ -1021,7 +1023,7 @@ RestartSec=60
 [Install]
 WantedBy=multi-user.target
 EOF
-sudo cp -v $BUILD_DIR/ospd-openvas.service /etc/systemd/system/
+sudo cp -vf $BUILD_DIR/ospd-openvas.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable ospd-openvas
 
@@ -1032,27 +1034,23 @@ echo -e "${LGREEN}##############################################################
 echo -e " Building & installing openvasd $OPENVAS_DAEMON"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $OPENVASD_DEPS &>/dev/null
 ) &
-spin
+pid=$!
+spin "$pid" "Installing openvasd packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}openvasd dependencies installed successfully...${NC}"
+
 eval "$SOURCE_CARGO_ENV"
 echo "openvasd rust dependencies installed successfully..."
 echo
@@ -1074,7 +1072,7 @@ cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/src/scannerctl
 cargo build --release
 sudo cp -v ../../target/release/openvasd $INSTALL_DIR/openvasd/usr/local/bin/
 sudo cp -v ../../target/release/scannerctl $INSTALL_DIR/openvasd/usr/local/bin/
-sudo cp -rv $INSTALL_DIR/openvasd/* /
+sudo cp -rvf $INSTALL_DIR/openvasd/* /
 
 # 29.9.0 and prior - build instructions reference previous source file paths 
 ##cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/openvasd # 23.9.0 and prior
@@ -1112,34 +1110,28 @@ echo -e "${LGREEN}##############################################################
 echo -e " Setting up greenbone-feed-sync"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $FEED_DEPS &>/dev/null
 ) &
-spin
-echo "greenbone-feed-sync dependencies installed successfully..."
-echo
+pid=$!
+spin "$pid" "Installing greenbone-feed-sync packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}greenbone-feed-sync dependencies installed successfully...${NC}"
 
 # Install greenbone-feed-sync
 mkdir -p $INSTALL_DIR/greenbone-feed-sync
 ${PIP_SUDO_FEED} python3 -m pip install --root=$INSTALL_DIR/greenbone-feed-sync ${PIP_OPTIONS} greenbone-feed-sync
-sudo cp -rv $INSTALL_DIR/greenbone-feed-sync/* /
+sudo cp -rvf $INSTALL_DIR/greenbone-feed-sync/* /
+
 
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
@@ -1148,34 +1140,28 @@ echo -e "${LGREEN}##############################################################
 echo -e " Setting up gvm-tools"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
 # Install dependencies
 eval $GVMTOOLS_DEPS &>/dev/null
 ) &
-spin
-echo "gvm-tools dependencies installed successfully..."
-echo
+pid=$!
+spin "$pid" "Installing gvm-tools packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}gvm-tools dependencies installed successfully...${NC}"
 
 # Install gvm-tools
 mkdir -p $INSTALL_DIR/gvm-tools
 ${PIP_SUDO_TOOLS} python3 -m pip install --root=$INSTALL_DIR/gvm-tools ${PIP_OPTIONS} gvm-tools
-sudo cp -rv $INSTALL_DIR/gvm-tools/* /
+sudo cp -rvf $INSTALL_DIR/gvm-tools/* /
+
 
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
@@ -1184,29 +1170,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Setting up the Redis data store"
 echo -e "###############################################################################${NC}"
 echo 
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $REDIS_DEPS &>/dev/null
 ) &
-spin
-echo "redis dependencies installed successfully..."
-echo
+pid=$!
+spin "$pid" "Installing redis packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}redis dependencies installed successfully...${NC}"
 
 # Configure redis
 sudo cp $SOURCE_DIR/openvas-scanner-$OPENVAS_SCANNER_VERSION/config/redis-openvas.conf /etc/redis/
@@ -1215,6 +1194,7 @@ echo "db_address = /run/redis-openvas/redis.sock" | sudo tee -a /etc/openvas/ope
 sudo systemctl start redis-server@openvas.service
 sudo systemctl enable redis-server@openvas.service
 sudo usermod -aG redis gvm
+
 
 echo -e ${LGREEN}
 # read -p "Press enter to continue" # (use this for debugging)
@@ -1247,7 +1227,7 @@ gpg --import /tmp/GBCommunitySigningKey.asc
 echo "8AE4BE429B60A59B311C2E739823FAA60ED1E580:6:" | gpg --import-ownertrust
 export OPENVAS_GNUPG_HOME=/etc/openvas/gnupg
 sudo mkdir -p $OPENVAS_GNUPG_HOME
-sudo cp -r /tmp/openvas-gnupg/* $OPENVAS_GNUPG_HOME/
+sudo cp -rfv /tmp/openvas-gnupg/* $OPENVAS_GNUPG_HOME/
 sudo chown -R gvm:gvm $OPENVAS_GNUPG_HOME
 
 # Set sudo permissions on the gvm service account
@@ -1346,6 +1326,6 @@ printf "${LGREEN}+##############################################################
 
 # Final change password message
 echo
-echo -e "${LGREEN}OpenVAS build complete\nManagement console = https://${CERT_DOMAIN} | username: ${ADMIN_USER} | password: ${ADMIN_PASS}\n${LPURPLEB} | You may change the admin password with:"
+echo -e "${LGREEN}OpenVAS build complete\nManagement console = https://${CERT_DOMAIN} | username: ${ADMIN_USER} | password: ${ADMIN_PASS}\n${LPURPLEB} You may change the admin password with:"
 echo -e sudo /usr/local/sbin/gvmd --user=${DEFAULT_ADMIN_USER} --new-password=password
 echo -e ${NC}
