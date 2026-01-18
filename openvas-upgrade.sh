@@ -3,7 +3,7 @@
 # Greenbone Vulnerability Manager appliance upgrade script
 # Multi-distro support for Ubuntu, Debian & Raspbian
 # David Harrop
-# January 2025
+# January 2026
 #########################################################################################################################
 
 #########################################################################################################################
@@ -11,14 +11,14 @@
 #########################################################################################################################
 
 ## FORCE PACKAGE VERSIONS or use blank "" to automatically download latest
-FORCE_GVM_LIBS_VERSION=""                            # see https://github.com/greenbone/gvm-libs
-FORCE_GVMD_VERSION=""                                # see https://github.com/greenbone/gvmd
-FORCE_PG_GVM_VERSION=""                              # see https://github.com/greenbone/pg-gvm
-FORCE_GSA_VERSION=""                                 # see https://github.com/greenbone/gsa
-FORCE_GSAD_VERSION=""                                # see https://github.com/greenbone/gsad
-FORCE_OPENVAS_SMB_VERSION=""                         # see https://github.com/greenbone/openvas-smb
-FORCE_OPENVAS_SCANNER_VERSION=""  				     # see https://github.com/greenbone/openvas-scanner
-FORCE_OSPD_OPENVAS_VERSION=""                        # see https://github.com/greenbone/ospd-openvas
+FORCE_GVM_LIBS_VERSION=""             # see https://github.com/greenbone/gvm-libs
+FORCE_GVMD_VERSION=""                 # see https://github.com/greenbone/gvmd
+FORCE_PG_GVM_VERSION=""               # see https://github.com/greenbone/pg-gvm
+FORCE_GSA_VERSION=""                  # see https://github.com/greenbone/gsa
+FORCE_GSAD_VERSION=""                 # see https://github.com/greenbone/gsad
+FORCE_OPENVAS_SMB_VERSION=""          # see https://github.com/greenbone/openvas-smb
+FORCE_OPENVAS_SCANNER_VERSION=""  	  # see https://github.com/greenbone/openvas-scanner
+FORCE_OSPD_OPENVAS_VERSION=""         # see https://github.com/greenbone/ospd-openvas
 FORCE_OPENVAS_DAEMON=$FORCE_OPENVAS_SCANNER_VERSION  # Uses same source as scanner
 
 ## POSTGRESQL VERSION MANAGEMENT ##
@@ -30,39 +30,45 @@ case "${VERSION_CODENAME,,}" in
         POSTGRESQL="postgresql postgresql-server-dev-15"
         ;;
 
-    *noble*|*trixie*)
+	*noble*)
 		OFFICIAL_POSTGRESQL="false"
         POSTGRESQL="postgresql postgresql-server-dev-16"
         ;;
+
+	*trixie*)
+		OFFICIAL_POSTGRESQL="false"
+        POSTGRESQL="postgresql postgresql-server-dev-17"
+        ;;
+
     *)
         OFFICIAL_POSTGRESQL="true" # Default to official source if no disto match
         POSTGRESQL="postgresql-16 postgresql-server-dev-16"
         ;;
 esac
 
-## DEPENDENCY MANAGEMENT
+
+## DEPENDENCY MANAGEMENT (Any changes here must be replicated in the upgrade script)
 # common
-COMMON_DEPS="sudo apt-get install --no-install-recommends --assume-yes build-essential curl cmake pkg-config python3 python3-pip gnupg wget sudo gnupg2 ufw htop git && sudo DEBIAN_FRONTEND="noninteractive" apt-get install postfix mailutils -y && sudo service postfix restart"
+COMMON_DEPS='sudo apt-get install --no-install-recommends --assume-yes build-essential curl cron cmake pkg-config python3 python3-pip gnupg wget sudo gnupg2 ufw htop git && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postfix mailutils && sudo service postfix restart'
 
 # gvm-libs
-GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev-bin libgpgme-dev libgnutls28-dev uuid-dev libssh-gcrypt-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev lcov libcurl4-gnutls-dev libgcrypt-dev "
-# extras above greenbone docs: doxygen xmltoman graphviz libcjson-dev lcov  (libcurl4-openssl-dev or libcurl4-gnutls-dev) libgcrypt-dev
+GVMLIBS_DEPS="sudo apt-get install -y libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libhiredis-dev libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap2-dev libradcli-dev doxygen xmltoman graphviz libcjson-dev lcov libcurl4-gnutls-dev libgcrypt20-dev libssh-dev"
 
 # gvmd
-GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev-bin libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libbsd-dev libgpgme-dev libcjson-dev" # extras above greenbone docs: libcjson-dev
-GVMD_DEPS2="sudo apt-get install -y --no-install-recommends texlive-latex-extra texlive-fonts-recommended xmlstarlet zip rpm fakeroot dpkg nsis gnupg gpgsm wget sshpass openssh-client socat snmp python3 smbclient python3-lxml gnutls-bin xml-twig-tools" # extras above greenbone docs: xml-twig-tools
+GVMD_DEPS1="sudo apt-get install -y libglib2.0-dev libgnutls28-dev libpq-dev ${POSTGRESQL} libical-dev xsltproc rsync libgpgme-dev libcjson-dev libbsd-dev"
+GVMD_DEPS2="sudo apt-get install -y --no-install-recommends texlive-latex-extra texlive-fonts-recommended xmlstarlet zip rpm fakeroot dpkg nsis gnupg gpgsm wget sshpass openssh-client socat snmp python3 smbclient python3-lxml gnutls-bin xml-twig-tools"
 
 # pg-gvm
-PGGVM=DEPS="sudo apt-get install -y libglib2.0-dev-bin libical-dev ${POSTGRESQL}"
+PGGVM_DEPS="sudo apt-get install -y libglib2.0-dev libical-dev ${POSTGRESQL}"
 
 # gsad
-GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev-bin libgnutls28-dev libbrotli-dev doxygen xmltoman" # extras above greenbone docs: libbrotli-dev libbrotli-dev doxygen xmltoman
+GSAD_DEPS="sudo apt-get install -y libmicrohttpd-dev libxml2-dev libglib2.0-dev libgnutls28-dev libbrotli-dev doxygen xmltoman"
 
 # openvas-smb
-OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev-bin libpopt-dev libunistring-dev heimdal-multidev perl-base" # extras above greenbone docs: substituted heimdal-dev for heimdal-multidev
+OPENVASSMB_DEPS="sudo apt-get install -y gcc-mingw-w64 libgnutls28-dev libglib2.0-dev libpopt-dev libunistring-dev heimdal-multidev perl-base"
 
 # openvas-scanner
-OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev-bin libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan krb5-multidev libmagic-dev"
+OPENVASSCAN_DEPS="sudo apt-get install -y bison libglib2.0-dev libgnutls28-dev libgcrypt20-dev libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pandoc pnscan krb5-multidev libmagic-dev" 
 
 # ospd-openvas
 OSPD_DEPS="sudo apt-get install -y python3 python3-pip python3-setuptools python3-packaging python3-wrapt python3-cffi python3-psutil python3-lxml python3-defusedxml python3-paramiko python3-redis python3-gnupg python3-paho-mqtt"
@@ -82,35 +88,47 @@ case "${VERSION_CODENAME,,}" in
         OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
 		SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\""
         ;;
-    *) # Default to this if no disto match
+    *) # Default to this and customise if necessary
         OPENVASD_DEPS="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && sudo apt-get install -y -qq pkg-config libssl-dev"
-		SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\"": # No specific action for other codenames either
+		SOURCE_CARGO_ENV=". \"$HOME/.cargo/env\"" # No specific action for other codenames either
         ;;
 esac
 
-## PIP INSTALL MANAGMENT
+
+## PIP INSTALL MANAGMENT ## (Any changes here must be replicated in the upgrade script)
 # Bookworm
 if [[ "${VERSION_CODENAME,,}" == *"bookworm"* ]]; then
     PIP_SUDO_OSPD="" 						# add "sudo" to ospd install cmd
     PIP_SUDO_FEED=""  						# add "sudo" to greenbone-feed-updates install cmd
-    PIP_SUDO_TOOLS=""  						# add "sudo" to gvm-tools install cmd
+    PIP_SUDO_TOOLS="sudo"					# add "sudo" to gvm-tools install cmd
     PIP_OPTIONS="--no-warn-script-location" # pip install arguments
     PIP_UNINSTALL="--break-system-packages" # pip uninstall arguments
-# Ubuntu 23.04 & 24.04
+
+# Ubuntu 24.0
 elif  [[ "${VERSION_CODENAME,,}" == *"noble"* ]]; then
     PIP_SUDO_OSPD="sudo"
     PIP_SUDO_FEED=""
     PIP_SUDO_TOOLS=""
     PIP_OPTIONS="--no-warn-script-location"
     PIP_UNINSTALL="--break-system-packages"
+
+# Debian 13
+elif [[ "${VERSION_CODENAME,,}" == *"trixie"* ]]; then
+    PIP_SUDO_OSPD="sudo"
+    PIP_SUDO_FEED=""
+    PIP_SUDO_TOOLS="sudo"
+    PIP_OPTIONS="--no-warn-script-location"
+    PIP_UNINSTALL="--break-system-packages"
+
 else
-# All other distros
+# All other distros - try your luck customising here
     PIP_SUDO_OSPD=""
     PIP_SUDO_FEED=""
     PIP_SUDO_TOOLS=""
     PIP_OPTIONS="--no-warn-script-location"
     PIP_UNINSTALL="--break-system-packages"
 fi
+
 
 #########################################################################################################################
 # Start of script actions - NO NEED TO EDIT BELOW THIS POINT ############################################################
@@ -168,6 +186,7 @@ export INSTALL_DIR=$HOME/install
 # Trigger sudo prompt and stop OpenVAS services
 sudo systemctl stop gsad gvmd ospd-openvas openvasd
 
+
 echo
 echo -e "${LGREEN}###############################################################################"
 echo -e " Uninstalling OpenVAS"
@@ -195,68 +214,82 @@ mkdir -p $SOURCE_DIR
 mkdir -p $BUILD_DIR
 mkdir -p $INSTALL_DIR
 
+
 echo
 echo -e "${LGREEN}###############################################################################"
 echo -e " Updating Linux OS"
 echo -e "###############################################################################${NC}"
 echo
 spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
+  local pid="$1"
+  local msg="${2:-Working}"
+  local delay=0.12
+  local frames='|/-\'
+  local i=0
+
+  # Hide cursor (restore on exit from this function)
+  tput civis 2>/dev/null || true
+
+  # Loop while process exists
+  while kill -0 "$pid" 2>/dev/null; do
+    printf "\r${LPURPLE}[%c]${NC} %s" "${frames:i%${#frames}:1}" "$msg"
+    i=$((i + 1))
+    sleep "$delay"
+  done
+
+  # Clear the line and show cursor again
+  printf "\r\033[K"
+  tput cnorm 2>/dev/null || true
 }
+
 (
     # Update Linux base
     sudo apt-get update &>/dev/null
     sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade -qq
+
 ) &
-spin
+pid=$!
+spin "$pid" "Updating Linux OS"
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
 echo
-echo "Linux updated successfully...."
+echo -e "${LGREEN}Linux updated successfully...${NC}"
+
 
 echo
 echo -e "${LGREEN}###############################################################################"
 echo -e " Updating common dependencies"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
-    # Install dependencies
+    # Install common dependencies
     eval $COMMON_DEPS &>/dev/null
 	# Import the Greenbone Community Signing Key
     curl -f -L https://www.greenbone.net/GBCommunitySigningKey.asc -o /tmp/GBCommunitySigningKey.asc
     gpg --import /tmp/GBCommunitySigningKey.asc
     echo "8AE4BE429B60A59B311C2E739823FAA60ED1E580:6:" | gpg --import-ownertrust
+
 ) &
-spin
+pid=$!
+spin "$pid" "Installing common dependendies..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
 echo
-echo -e "Common dependencies updated successfully..."
+echo -e "${LGREEN}Common dependencies updated successfully...${NC}"
+
 
 echo
 echo -e "${LGREEN}###############################################################################"
@@ -281,7 +314,8 @@ declare -A repos=(
     ["OPENVAS_SCANNER_VERSION"]="greenbone/openvas-scanner"
     ["OSPD_OPENVAS_VERSION"]="greenbone/ospd-openvas"
 )
-echo -e " ${LGREEN}Latest OpenVAS releases will be upgraded by default:${NC}"
+
+echo -e " ${LGREEN}Latest OpenVAS package releases available:${NC}"
 # Get latest OpenVAS versions
 for version in "${!repos[@]}"; do
     latest_version=$(get_latest_release "${repos[$version]}")
@@ -292,6 +326,7 @@ for version in "${!repos[@]}"; do
     export $version=$latest_version
     echo " $version=$latest_version"
 done
+
 # openvasd uses the same repo as scanner
 export OPENVAS_DAEMON=$OPENVAS_SCANNER_VERSION
 echo " OPENVAS_DAEMON=$OPENVAS_SCANNER_VERSION"
@@ -355,33 +390,28 @@ if [[ -n $FORCE_OPENVAS_DAEMON ]]; then
   echo -e "${LYELLOW} OPENVAS_DAEMON=$FORCE_OPENVAS_DAEMON${NC}"
 fi
 
+
 echo
 echo -e "${LGREEN}###############################################################################"
 echo -e " Upgrading gvm-libs to $GVM_LIBS_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $GVMLIBS_DEPS &>/dev/null
 ) &
-spin
-echo "gvm-libs dependencies updated successfully..."
+pid=$!
+spin "$pid" "Installing gvm-libs packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}gvm-libs dependencies updated successfully...${NC}"
 echo
 
 # Download the gvm-libs sources
@@ -406,6 +436,7 @@ mkdir -p $INSTALL_DIR/gvm-libs
 make DESTDIR=$INSTALL_DIR/gvm-libs install
 sudo cp -rvf $INSTALL_DIR/gvm-libs/* /
 
+
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
 echo -e ${NC}
@@ -413,33 +444,27 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading gvmd to $GVMD_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $GVMD_DEPS1 &>/dev/null
     eval $GVMD_DEPS2 &>/dev/null
 ) &
-spin
-echo "gvmd dependencies updated successfully..."
+pid=$!
+spin "$pid" "Installing gvmd packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}gvmd dependencies updated successfully..${NC}"
 echo
 
-# Download the gvmd sources
-export GVMD_VERSION=$GVMD_VERSION
+# Download the gvm-libs sources
+export GVM_LIBS_VERSION=$GVM_LIBS_VERSION
 curl -f -L https://github.com/greenbone/gvmd/archive/refs/tags/v$GVMD_VERSION.tar.gz -o $SOURCE_DIR/gvmd-$GVMD_VERSION.tar.gz
 curl -f -L https://github.com/greenbone/gvmd/releases/download/v$GVMD_VERSION/gvmd-$GVMD_VERSION.tar.gz.asc -o $SOURCE_DIR/gvmd-$GVMD_VERSION.tar.gz.asc
 gpg --verify $SOURCE_DIR/gvmd-$GVMD_VERSION.tar.gz.asc $SOURCE_DIR/gvmd-$GVMD_VERSION.tar.gz
@@ -487,9 +512,10 @@ TimeoutStopSec=10
 [Install]
 WantedBy=multi-user.target
 EOF
-sudo cp -vf $BUILD_DIR/gvmd.service /etc/systemd/system/
+sudo cp -v $BUILD_DIR/gvmd.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable gvmd
+
 
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
@@ -498,28 +524,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading pg-gvm to $PG_GVM_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $PGGVM_DEPS &>/dev/null
 ) &
-spin
-echo "pg-gvm dependencies updated successfully..."
+pid=$!
+spin "$pid" "Installing pg-gvm packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}pg-gvm dependencies updated successfully...${NC}"
 echo
 
 # Download the pg-gvm sources
@@ -541,6 +561,7 @@ mkdir -p $INSTALL_DIR/pg-gvm
 make DESTDIR=$INSTALL_DIR/pg-gvm install
 sudo cp -rvf $INSTALL_DIR/pg-gvm/* /
 
+
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
 echo -e ${NC}
@@ -560,6 +581,7 @@ echo
     sudo mkdir -p $INSTALL_PREFIX/share/gvm/gsad/web/
     sudo cp -rvf $SOURCE_DIR/gsa-$GSA_VERSION/* $INSTALL_PREFIX/share/gvm/gsad/web/
 
+
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
 echo -e ${NC}
@@ -567,28 +589,22 @@ echo -e "${LGREEN}##############################################################
 echo -e "Upgrading gsad to $GSAD_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $GSAD_DEPS &>/dev/null
 ) &
-spin
-echo "gsad dependencies updated successfully..."
+pid=$!
+spin "$pid" "Installing gsad packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}gsad dependencies updated successfully...${NC}"
 echo
 
 # Download gsad sources
@@ -657,28 +673,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading openvas-smb to $OPENVAS_SMB_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $OPENVASSMB_DEPS &>/dev/null
 ) &
-spin
-echo "openvas-smb dependencies updated successfully..."
+pid=$!
+spin "$pid" "Installing openvas-smb packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}openvas-smb dependencies updated successfully...${NC}"
 echo
 
 # Download the openvas-smb sources
@@ -701,6 +711,7 @@ mkdir -p $INSTALL_DIR/openvas-smb
 make DESTDIR=$INSTALL_DIR/openvas-smb install
 sudo cp -rvf $INSTALL_DIR/openvas-smb/* /
 
+
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
 echo -e ${NC}
@@ -708,28 +719,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading openvas-scanner to $OPENVAS_SCANNER_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $OPENVASSCAN_DEPS &>/dev/null
 ) &
-spin
-echo "openvas-scanner dependencies updated successfully..."
+pid=$!
+spin "$pid" "Installing openvas-scanner packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}openvas-scanner dependencies updated successfully...${NC}"
 echo
 
 # Download openvas-scanner sources
@@ -759,6 +764,7 @@ sudo cp -rvf $INSTALL_DIR/openvas-scanner/* /
 printf "table_driven_lsc = yes\n" | sudo tee /etc/openvas/openvas.conf
 sudo printf "openvasd_server = http://127.0.0.1:3000\n" | sudo tee -a /etc/openvas/openvas.conf
 
+
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
 echo -e ${NC}
@@ -766,28 +772,22 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading ospd-openvas to $OSPD_OPENVAS_VERSION"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $OSPD_DEPS &>/dev/null
 ) &
-spin
-echo "ospd-openvas dependencies updated successfully..."
+pid=$!
+spin "$pid" "Installing ospd-openvas packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}ospd-openvas dependencies updated successfully...${NC}"
 echo
 
 # Download ospd-openvas sources
@@ -830,6 +830,7 @@ sudo cp -vf $BUILD_DIR/ospd-openvas.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable ospd-openvas
 
+
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
 echo -e ${NC}
@@ -837,28 +838,24 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading openvasd to $OPENVAS_DAEMON"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $OPENVASD_DEPS &>/dev/null
 	eval "$SOURCE_CARGO_ENV"
 ) &
-spin
+pid=$!
+spin "$pid" "Installing openvasd packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}openvasd dependencies updated successfully...${NC}"
+
 eval "$SOURCE_CARGO_ENV"
 echo "openvasd rust dependencies updated successfully..."
 echo
@@ -874,13 +871,22 @@ gpg --verify $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON.tar.gz.asc $SOURCE_DIR/
 echo
 tar -C $SOURCE_DIR -xvzf $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON.tar.gz
 mkdir -p $INSTALL_DIR/openvasd/usr/local/bin
-cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/src
+cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/src/openvasd
 cargo build --release
-sudo cp -v ../target/release/openvasd $INSTALL_DIR/openvasd/usr/local/bin/
 cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/src/scannerctl
 cargo build --release
-sudo cp -v ../target/release/scannerctl $INSTALL_DIR/openvasd/usr/local/bin/
-sudo cp -rv $INSTALL_DIR/openvasd/* /
+sudo cp -v ../../target/release/openvasd $INSTALL_DIR/openvasd/usr/local/bin/
+sudo cp -v ../../target/release/scannerctl $INSTALL_DIR/openvasd/usr/local/bin/
+sudo cp -rvf $INSTALL_DIR/openvasd/* /
+
+# 29.9.0 and prior - build instructions reference previous source file paths 
+##cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/openvasd # 23.9.0 and prior
+# cargo build --release
+##cd $SOURCE_DIR/openvas-scanner-$OPENVAS_DAEMON/rust/scannerctl # 23.9.0 and prior
+# cargo build --release
+##sudo cp -v ../target/release/scannerctl $INSTALL_DIR/openvasd/usr/local/bin/
+##sudo cp -rv $INSTALL_DIR/openvasd/* /
+
 cat << EOF > $BUILD_DIR/openvasd.service
 [Unit]
 Description=OpenVASD
@@ -898,9 +904,10 @@ RestartSec=60
 [Install]
 WantedBy=multi-user.target
 EOF
-sudo cp -vf $BUILD_DIR/openvasd.service /etc/systemd/system/
+sudo cp -v $BUILD_DIR/openvasd.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable openvasd
+
 
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
@@ -909,34 +916,28 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading greenbone-feed-sync"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $FEED_DEPS &>/dev/null
 ) &
-spin
-echo "greenbone-feed-sync dependencies updated successfully..."
-echo
+pid=$!
+spin "$pid" "Installing greenbone-feed-sync packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}greenbone-feed-sync dependencies updated successfully...${NC}"
 
 # Install greenbone-feed-sync
 mkdir -p $INSTALL_DIR/greenbone-feed-sync
 ${PIP_SUDO_FEED} python3 -m pip install --root=$INSTALL_DIR/greenbone-feed-sync ${PIP_OPTIONS} greenbone-feed-sync
 sudo cp -rvf $INSTALL_DIR/greenbone-feed-sync/* /
+
 
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
@@ -945,34 +946,28 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading gvm-tools"
 echo -e "###############################################################################${NC}"
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
 # Install dependencies
 eval $GVMTOOLS_DEPS &>/dev/null
 ) &
-spin
-echo "gvm-tools dependencies updated successfully..."
-echo
+pid=$!
+spin "$pid" "Installing gvm-tools packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}gvm-tools dependencies updated successfully...${NC}"
 
 # Install gvm-tools
 mkdir -p $INSTALL_DIR/gvm-tools
 ${PIP_SUDO_TOOLS} python3 -m pip install --root=$INSTALL_DIR/gvm-tools ${PIP_OPTIONS} gvm-tools
 sudo cp -rvf $INSTALL_DIR/gvm-tools/* /
+
 
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
@@ -981,37 +976,31 @@ echo -e "${LGREEN}##############################################################
 echo -e " Upgrading the Redis data store"
 echo -e "###############################################################################${NC}"
 echo 
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
     # Install dependencies
     eval $REDIS_DEPS &>/dev/null
 ) &
-spin
-echo "redis dependencies updated successfully..."
-echo
+pid=$!
+spin "$pid" "Installing redis packages..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}redis dependencies updated successfully...${NC}"
 
 # Configure redis
-sudo cp -f $SOURCE_DIR/openvas-scanner-$OPENVAS_SCANNER_VERSION/config/redis-openvas.conf /etc/redis/
+sudo cp $SOURCE_DIR/openvas-scanner-$OPENVAS_SCANNER_VERSION/config/redis-openvas.conf /etc/redis/
 sudo chown redis:redis /etc/redis/redis-openvas.conf
 echo "db_address = /run/redis-openvas/redis.sock" | sudo tee -a /etc/openvas/openvas.conf
 sudo systemctl start redis-server@openvas.service
 sudo systemctl enable redis-server@openvas.service
 sudo usermod -aG redis gvm
+
 
 echo -e ${LGREEN}
 read -p "Please check above output for any errors or issues with (new) dependencies not found. Hit enter to continue."
@@ -1033,33 +1022,27 @@ gpg --import /tmp/GBCommunitySigningKey.asc
 echo "8AE4BE429B60A59B311C2E739823FAA60ED1E580:6:" | gpg --import-ownertrust
 export OPENVAS_GNUPG_HOME=/etc/openvas/gnupg
 sudo mkdir -p $OPENVAS_GNUPG_HOME
-sudo cp -rf /tmp/openvas-gnupg/* $OPENVAS_GNUPG_HOME/
+sudo cp -rfv /tmp/openvas-gnupg/* $OPENVAS_GNUPG_HOME/
 sudo chown -R gvm:gvm $OPENVAS_GNUPG_HOME
 echo
-spin() {
-    local pid=$!
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf "${LPURPLE} [%c]  ${NC}" "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "\b\b\b\b\b\b"
-    printf "            "
-    printf "\b\b\b\b\b\b"
-	echo -ne "\r"
-}
+
 (
 	# Migrate database schema if needed
     /usr/local/sbin/gvmd --migrate
     sudo ldconfig
 ) &
-spin
+pid=$!
+spin "$pid" "Migrating database..."
+wait "$pid"
+rc=$?
+
+if (( rc != 0 )); then
+  echo -e "${LRED}Task failed (exit $rc)${NC}"
+  exit "$rc"
+fi
+
+echo -e "${LGREEN}Database migrated successfully...${NC}"
 echo
-echo "Database migrated successfully...."
 
 echo -e "${LGREEN}###############################################################################"
 echo -e " Cleaning up build sources & re-setting firewall rules"
@@ -1083,6 +1066,7 @@ sudo ufw allow 443/tcp
 echo "y" | sudo ufw enable >/dev/null
 sudo ufw logging off
 
+echo
 echo -e "${LGREEN}###############################################################################"
 echo -e " A feed update is required before OpenVAS can start, THIS MAY TAKE A LONG TIME"
 echo -e "###############################################################################${NC}"
@@ -1097,5 +1081,3 @@ sudo bash -c '/usr/local/bin/greenbone-feed-sync; systemctl start ospd-openvas; 
 # Final change password message
 echo -e "${LGREEN}OpenVAS upgrade complete"
 echo -e ${NC}
-
-
