@@ -1,6 +1,6 @@
 # Greenbone OpenVAS Scanner Build & Upgrade Scripts
 
-#### Note: Greenbone makes many substantive changes with dependencies (and not documenting them!), so from time to time this will need some tweaking to work.  
+#### Note: Script dependencies last updated Januray 2026. From time to time these need updating. Please post an issue for dependency error(s).  
 
 ### 📦 Auto install link
 (Do NOT run script as root, it will prompt for sudo)
