@@ -1,0 +1,67 @@
+#!/bin/bash
+# Shared APT dependency lists for:
+# openvas-install.sh | openvas-upgrade.sh | openvas-migrate-legacy-build.sh.
+#
+# Maintain the dependency package lists in one place here.
+# POSTGRESQL major version is initially selected at install. The upgrader 
+# appends its detected PostgreSQL packages during preflight.
+
+# BEGIN SHARED DEPENDENCIES
+# Keep these arrays identical in all three standalone scripts.
+# common
+COMMON_DEPS=(build-essential curl cron cmake pkg-config python3 python3-venv
+    python3-dev ca-certificates openssl gnupg wget sudo ufw git iproute2
+    libffi-dev libxslt1-dev rsync htop util-linux)
+# Installed separately to preserve the original APT options and Postfix setup.
+MAIL_DEPS=(postfix mailutils)
+
+# gvm-libs
+GVMLIBS_DEPS=(libglib2.0-dev libgpgme-dev libgnutls28-dev uuid-dev libhiredis-dev
+    libxml2-dev libpcap-dev libnet1-dev libpaho-mqtt-dev libldap-dev libradcli-dev
+    xmltoman libcjson-dev libcrypt-dev zlib1g-dev libcurl4-gnutls-dev
+    libgcrypt20-dev libssh-dev doxygen graphviz)
+
+# gvmd
+GVMD_DEPS1=(libglib2.0-dev libgnutls28-dev libpq-dev "${POSTGRESQL[@]}"
+    libical-dev xsltproc rsync libgpgme-dev libcjson-dev libbsd-dev)
+GVMD_DEPS2=(texlive-latex-extra texlive-fonts-recommended xmlstarlet zip rpm
+    fakeroot dpkg nsis gnupg gpgsm wget sshpass openssh-client socat snmp
+    python3 smbclient python3-lxml gnutls-bin)
+
+# pg-gvm
+PGGVM_DEPS=(libglib2.0-dev libical-dev "${POSTGRESQL[@]}")
+
+# gsad
+GSAD_DEPS=(libmicrohttpd-dev libxml2-dev libglib2.0-dev libgnutls28-dev
+    libbrotli-dev zlib1g-dev libgcrypt20-dev xmltoman doxygen)
+
+# openvas-smb
+OPENVASSMB_DEPS=(gcc-mingw-w64 libgnutls28-dev libglib2.0-dev libpopt-dev
+    libunistring-dev heimdal-multidev perl-base)
+
+# openvas-scanner
+OPENVASSCAN_DEPS=(bison libglib2.0-dev libgnutls28-dev libgcrypt20-dev
+    libpcap-dev libgpgme-dev libksba-dev rsync nmap libjson-glib-dev
+    libcurl4-gnutls-dev libbsd-dev python3-impacket libsnmp-dev pnscan
+    krb5-multidev libmagic-dev capnproto pandoc)
+
+# ospd-openvas
+OSPD_DEPS=(python3 python3-venv python3-dev)
+
+# greenbone-feed-sync
+FEED_DEPS=(python3 python3-venv)
+
+# gvm-tools
+GVMTOOLS_DEPS=(python3 python3-venv python3-dev)
+
+# redis
+REDIS_DEPS=(redis-server)
+
+# Rust/native build dependencies
+OPENVASD_DEPS=(pkg-config libssl-dev clang libclang-dev bison flex capnproto)
+PYPSRP_DEPS=(python3-dev python3-venv libkrb5-dev krb5-user)
+# Required before pip's metadata/dependency preflight, including gssapi sdists.
+PYTHON_BUILD_DEPS=(build-essential pkg-config python3-dev python3-venv
+    libffi-dev libssl-dev libkrb5-dev)
+
+# END SHARED DEPENDENCIES
