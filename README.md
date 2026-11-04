@@ -19,7 +19,7 @@ wget https://raw.githubusercontent.com/itiligent/Easy-OpenVAS-Installer/main/ope
 
 
 > [!CAUTION]
-> For existing installations (pre-November 2026 update) installed with earlier build scripts, you must first run [this one-time migration script](https://github.com/itiligent/Easy-OpenVAS-Installer/blob/main/openvas-migrate-legacy-build.sh) with the `--migrate-legacy` argument to update older builds to the new structure. After this you may use the above auto supgrade script for ongoing updates.
+> For existing installations (pre-November 2026 update) installed with earlier build scripts, you must first run [this one-time migration script](https://github.com/itiligent/Easy-OpenVAS-Installer/blob/main/openvas-migrate-legacy-build.sh) with the `--migrate-legacy` argument to update older builds to the new structure. After this you may use the above auto upgrade script for ongoing updates.
 ---
 
 ### 📋 Prerequisites
